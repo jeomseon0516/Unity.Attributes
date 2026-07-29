@@ -1,0 +1,6 @@
+{
+  "name": "Jeomseon.Unity.Attributes.Samples.BasicUsage",
+  "references": [
+    "Jeomseon.Unity.Attributes"
+  ]
+}

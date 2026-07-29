@@ -1,6 +1,6 @@
 {
   "name": "com.jeomseon.unity.attributes",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "displayName": "Jeomseon Unity Attributes",
   "description": "Lightweight inspector attribute declarations for Unity projects.",
   "unity": "2022.3",
@@ -19,5 +19,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/jeomseon0516/Unity.Attributes.git"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Basic Usage",
+      "description": "패키지 핵심 API를 확인하는 최소 사용 예제입니다.",
+      "path": "Samples~/BasicUsage"
+    }
+  ]
 }
