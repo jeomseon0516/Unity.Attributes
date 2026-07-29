@@ -1,5 +1,12 @@
 # 변경 기록
 
+## [0.2.0] - 2026-07-29
+
+### Changed
+
+- `OnChangedValueByMethodAttribute`를 의도가 더 명확한 `OnChangedValueForMethodAttribute`로 변경했습니다.
+- 초기 배포 단계이므로 구 이름의 호환 타입은 남기지 않았습니다.
+
 ## [0.1.0] - 2026-07-29
 
 ### Added

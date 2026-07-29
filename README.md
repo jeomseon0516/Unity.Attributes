@@ -13,7 +13,7 @@ Unity Inspector 확장에 사용하는 범용 Attribute 선언을 제공하는 �
 ```json
 {
   "dependencies": {
-    "com.jeomseon.unity.attributes": "0.1.0"
+    "com.jeomseon.unity.attributes": "0.2.0"
   }
 }
 ```

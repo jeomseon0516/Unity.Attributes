@@ -1,6 +1,6 @@
 {
   "name": "com.jeomseon.unity.attributes",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Jeomseon Unity Attributes",
   "description": "Lightweight inspector attribute declarations for Unity projects.",
   "unity": "2022.3",
