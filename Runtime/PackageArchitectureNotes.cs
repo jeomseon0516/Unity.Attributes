@@ -1,4 +1,4 @@
-namespace Jeomseon.PackageNotes
+namespace Jeomseon.Attribute
 {
     internal static class PackageArchitectureNotes
     {
