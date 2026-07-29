@@ -1,0 +1,23 @@
+{
+  "name": "com.jeomseon.unity.attributes",
+  "version": "0.1.0",
+  "displayName": "Jeomseon Unity Attributes",
+  "description": "Lightweight inspector attribute declarations for Unity projects.",
+  "unity": "2022.3",
+  "dependencies": {},
+  "author": {
+    "name": "jeomseon0516",
+    "url": "https://github.com/jeomseon0516"
+  },
+  "keywords": [
+    "jeomseon",
+    "unity",
+    "attributes",
+    "inspector"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeomseon0516/Unity.Attributes.git"
+  }
+}
