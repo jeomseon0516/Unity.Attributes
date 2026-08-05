@@ -13,7 +13,7 @@
 ```json
 {
   "dependencies": {
-    "com.jeomseon.unity.attributes": "0.2.2"
+    "com.jeomseon.unity.attributes": "0.3.0"
   }
 }
 ```

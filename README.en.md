@@ -2,6 +2,16 @@
 
 Reusable inspector attributes with their editor implementations for Unity projects.
 
+## Installation
+
+```json
+{
+  "dependencies": {
+    "com.jeomseon.unity.attributes": "0.3.0"
+  }
+}
+```
+
 ## Included APIs
 
 - Display and editing: `InfoBox`, `ReadOnly`, `SpritePreview`, `Vector2Slider`
