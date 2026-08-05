@@ -13,7 +13,7 @@ namespace Jeomseon.Attribute
 
         public SpritePreviewAttribute(float size = 64f)
         {
-            Size = size;
+            Size = Mathf.Max(0f, size);
         }
     }
 }

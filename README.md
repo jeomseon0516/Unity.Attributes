@@ -2,31 +2,41 @@
 
 한국어 | [English](./README.en.md)
 
-Unity Inspector 확장에 사용하는 범용 Attribute 선언을 제공하는 경량 패키지입니다.
+범용 Inspector Attribute와 해당 Editor 구현을 함께 제공하는 개발 편의 패키지입니다.
 
 ## 요구 사항
 
-- Unity 2022.3 이상
+- Unity 6000.3.15f1 이상
 
 ## 설치
 
 ```json
 {
   "dependencies": {
-    "com.jeomseon.unity.attributes": "0.2.0"
+    "com.jeomseon.unity.attributes": "0.2.2"
   }
 }
 ```
 
 ## 포함 기능
 
-- 필드 표시 및 편집 제어 Attribute
-- Inspector 버튼용 메서드 Attribute
-- 값 변경 감지용 메서드 Attribute
-- 컴포넌트 자동 연결 지원 Attribute
+- 표시·편집: `InfoBox`, `ReadOnly`, `SpritePreview`, `Vector2Slider`
+- 값 제한: `MaxValue` (`Min`은 Unity 기본 API 사용)
+- 오브젝트 연결: `GetOrAddComponent`, `HierarchyObjectPicker`
+- 메서드 실행: `InspectorButton`, `InvokeOnInspectorChange`
+- 각 Attribute의 PropertyDrawer, Inspector UI 및 메서드 실행 구현
 
-PropertyDrawer와 메서드 메타데이터 UI는 `com.jeomseon.unity.editor-toolkit`에서 제공합니다.
-Localization 전용 `LocalizedStringAttribute`는 `com.jeomseon.unity.localization`에서 제공합니다.
+`InvokeOnInspectorChange`는 Inspector나 Editor 도구가 Undo를 통해 직렬화 필드를
+변경했을 때 매개변수 없는 메서드를 지연 호출합니다. 런타임 값 변경 알림 용도가 아닙니다.
+
+## 패키지 경계
+
+- 이 패키지는 특정 기능 도메인에 의존하지 않는 Inspector Attribute의 선언과 Editor 구현을 소유합니다.
+- 공통 Editor API는 `com.jeomseon.unity.editor-toolkit`을 단방향으로 참조해 재사용합니다.
+- 기능 전용 Attribute는 해당 기능 패키지가 소유합니다. 예를 들어 `LocalizedStringAttribute`는
+  `com.jeomseon.unity.localization`, `ResetOnPoolReleaseAttribute`는
+  `com.jeomseon.unity.game-object-pooling`에서 제공합니다.
+- Runtime asmdef는 Editor 어셈블리를 참조하지 않으며 Editor 의존성은 Editor asmdef에만 제한됩니다.
 
 ## 라이선스
 

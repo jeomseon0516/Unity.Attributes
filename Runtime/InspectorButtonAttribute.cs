@@ -1,24 +1,19 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using UnityEngine;
 
-/// <summary>
-/// .. 인스펙터의 버튼을 누르면 메서드를 호출합니다
-/// </summary>
 namespace Jeomseon.Attribute
 {
-    using Attribute = System.Attribute;
-
+    /// <summary>
+    /// Inspector에 버튼을 표시하고 클릭했을 때 메서드 호출을 요청합니다.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false), Conditional("UNITY_EDITOR")]
-    public sealed class InspectorButtonAttribute : Attribute
+    public sealed class InspectorButtonAttribute : EditorMethodTriggerAttribute
     {
-        public string ButtonName { get; } = string.Empty;
+        public string Label { get; }
 
-        public InspectorButtonAttribute(string buttonName)
+        public InspectorButtonAttribute(string label)
         {
-            ButtonName = buttonName;
+            Label = label ?? string.Empty;
         }
     }
 }

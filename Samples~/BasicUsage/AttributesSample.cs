@@ -5,14 +5,20 @@ namespace Jeomseon.Samples.Attributes
 {
     public sealed class AttributesSample : MonoBehaviour
     {
-        [InfoBox("EditorToolkit을 함께 설치하면 Attribute Drawer가 표시됩니다.")]
-        [DisplayAs("표시 이름")]
+        [InfoBox("Attributes 패키지가 Attribute Drawer를 함께 제공합니다.")]
+        [InspectorName("표시 이름")]
         [SerializeField] private string _message = "Hello";
 
         [ReadOnly]
         [SerializeField] private int _changeCount;
 
-        [OnChangedValueForMethod(nameof(_message))]
+        [Min(0f)]
+        [SerializeField] private float _minimumBoundedValue;
+
+        [MaxValue(10)]
+        [SerializeField] private int _maximumBoundedValue;
+
+        [InvokeOnInspectorChange(nameof(_message))]
         private void OnMessageChanged()
         {
             _changeCount++;

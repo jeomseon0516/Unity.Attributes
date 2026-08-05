@@ -1,0 +1,16 @@
+{
+  "name": "Jeomseon.Unity.Attributes.Tests",
+  "rootNamespace": "Jeomseon.Attribute.Tests",
+  "references": [
+    "Jeomseon.Unity.Attributes",
+    "Jeomseon.Unity.Attributes.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false,
+  "noEngineReferences": false
+}

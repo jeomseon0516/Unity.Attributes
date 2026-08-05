@@ -1,0 +1,15 @@
+{
+  "name": "Jeomseon.Unity.Attributes.Editor",
+  "rootNamespace": "Jeomseon.Attribute.Editor",
+  "references": [
+    "Jeomseon.Unity.Attributes",
+    "Jeomseon.Unity.EditorToolkit",
+    "Jeomseon.Unity.EditorToolkit.Editor",
+    "Jeomseon.Unity.Core"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

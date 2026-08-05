@@ -10,19 +10,19 @@ namespace Jeomseon.Attribute
     public sealed class InfoBoxAttribute : PropertyAttribute
     {
         public string Message { get; }
-        public INFO_TYPE InfoType { get; }
+        public InfoBoxType Type { get; }
 
-        public InfoBoxAttribute(string message, INFO_TYPE infoType = INFO_TYPE.INFO)
+        public InfoBoxAttribute(string message, InfoBoxType type = InfoBoxType.Info)
         {
-            Message = message;
-            InfoType = infoType;
+            Message = message ?? string.Empty;
+            Type = type;
         }
     }
 
-    public enum INFO_TYPE
+    public enum InfoBoxType
     {
-        INFO,
-        WARNING,
-        ERROR
+        Info,
+        Warning,
+        Error
     }
 }
