@@ -63,3 +63,8 @@
 
 - JeomseonScriptPack의 범용 Inspector Attribute 선언을 독립 패키지로 분리했습니다.
 - Localization 전용 Attribute는 Localization 패키지가 소유하도록 제외했습니다.
+
+
+## [0.3.1] - 2026-08-05
+
+- Unity 6000.5.7f1을 최소 지원 버전으로 상향했습니다.

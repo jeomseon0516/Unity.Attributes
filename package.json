@@ -1,10 +1,10 @@
 {
   "name": "com.jeomseon.unity.attributes",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "displayName": "Jeomseon Unity Attributes",
   "description": "Reusable inspector attributes with their editor implementations for Unity projects.",
-  "unity": "6000.3",
-  "unityRelease": "15f1",
+  "unity": "6000.5",
+  "unityRelease": "7f1",
   "dependencies": {
     "com.jeomseon.unity.editor-toolkit": "0.3.2",
     "com.jeomseon.unity.core": "0.1.0"
