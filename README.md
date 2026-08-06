@@ -26,6 +26,18 @@
 - 메서드 실행: `InspectorButton`, `InvokeOnInspectorChange`
 - 각 Attribute의 PropertyDrawer, Inspector UI 및 메서드 실행 구현
 
+## Sample 검증
+
+`Samples~/BasicUsage/AttributesSample` Scene은 UI Toolkit Inspector에서 `InfoBox`, `MaxValue`,
+`ReadOnly`를 한 화면에 확인할 수 있도록 구성되어 있습니다. Inspector 폭을 좁혀 InfoBox가
+여러 줄로 표시되고 텍스트가 잘리지 않는지 확인합니다.
+
+Injection 회귀 확인은 다음 순서로 진행합니다.
+
+1. `Project Settings > Jeomseon > Attributes`에서 Injection을 활성화하고 InspectorButton이 하나만 표시되는지 확인합니다.
+2. Injection을 비활성화하고 Inspector Header fallback 버튼이 하나만 표시되는지 확인합니다.
+3. Assembly Reload와 Domain Reload를 각각 활성화/비활성화한 뒤 버튼 중복, 누수, 재활성화 실패가 없는지 확인합니다.
+
 `InvokeOnInspectorChange`는 Inspector나 Editor 도구가 Undo를 통해 직렬화 필드를
 변경했을 때 매개변수 없는 메서드를 지연 호출합니다. 런타임 값 변경 알림 용도가 아닙니다.
 

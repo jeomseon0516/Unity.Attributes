@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEditor;
 using Jeomseon.Attribute;
 using Jeomseon.Editor;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 
 namespace Jeomseon.Attribute.Editor
 {
@@ -14,6 +16,13 @@ namespace Jeomseon.Attribute.Editor
     internal sealed class ReadOnlyPropertyDrawer : PropertyDrawer
     {
         private readonly Dictionary<SerializedProperty, int?> _cachedArraySizeDictionary = new();
+
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            PropertyField field = new(property);
+            field.SetEnabled(false);
+            return field;
+        }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

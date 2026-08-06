@@ -1,12 +1,59 @@
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 
 namespace Jeomseon.Attribute.Editor
 {
     [CustomPropertyDrawer(typeof(MaxValueAttribute), true)]
     internal sealed class MaxValueAttributeDrawer : PropertyDrawer
     {
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            MaxValueAttribute maxAttribute = (MaxValueAttribute)attribute;
+            VisualElement root = new();
+
+            if (property.propertyType == SerializedPropertyType.Float)
+            {
+                FloatField field = new(property.displayName)
+                {
+                    bindingPath = property.propertyPath
+                };
+                field.RegisterValueChangedCallback(change =>
+                {
+                    float clamped = Clamp(change.newValue, maxAttribute.Max);
+                    if (!Mathf.Approximately(change.newValue, clamped))
+                        field.SetValueWithoutNotify(clamped);
+                    property.floatValue = clamped;
+                    property.serializedObject.ApplyModifiedProperties();
+                });
+                root.Add(field);
+                return root;
+            }
+
+            if (property.propertyType == SerializedPropertyType.Integer)
+            {
+                IntegerField field = new(property.displayName)
+                {
+                    bindingPath = property.propertyPath
+                };
+                field.RegisterValueChangedCallback(change =>
+                {
+                    int clamped = Clamp(change.newValue, maxAttribute.Max);
+                    if (change.newValue != clamped)
+                        field.SetValueWithoutNotify(clamped);
+                    property.intValue = clamped;
+                    property.serializedObject.ApplyModifiedProperties();
+                });
+                root.Add(field);
+                return root;
+            }
+
+            root.Add(new PropertyField(property));
+            return root;
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             MaxValueAttribute maxAttribute = (MaxValueAttribute)attribute;

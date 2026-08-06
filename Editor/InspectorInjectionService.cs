@@ -13,9 +13,19 @@ namespace Jeomseon.Attribute.Editor
     {
         private static IInspectorInjectionBackend _backend;
 
+        public static bool IsRunning => _backend?.IsRunning == true;
+
+        internal static void Refresh()
+        {
+            EditorApplication.delayCall -= Initialize;
+            EditorApplication.delayCall += Initialize;
+        }
+
         static InspectorInjectionService()
         {
             AssemblyReloadEvents.beforeAssemblyReload += Dispose;
+            EditorApplication.quitting += Dispose;
+            EditorApplication.delayCall -= Initialize;
             EditorApplication.delayCall += Initialize;
         }
 
@@ -30,7 +40,12 @@ namespace Jeomseon.Attribute.Editor
          */
         private static void Initialize()
         {
+            EditorApplication.delayCall -= Initialize;
             Dispose();
+
+            if (!InspectorInjectionSettings.Enabled)
+                return;
+
             _backend = InspectorInjectionBackendFactory.Create();
 
             if (!_backend.IsSupported)

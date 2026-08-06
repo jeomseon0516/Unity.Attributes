@@ -1,12 +1,30 @@
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 
 namespace Jeomseon.Attribute.Editor
 {
     [CustomPropertyDrawer(typeof(InfoBoxAttribute))]
     internal sealed class InfoBoxDrawer : PropertyDrawer
     {
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            InfoBoxAttribute infoBoxAttribute = (InfoBoxAttribute)attribute;
+            HelpBoxMessageType messageType = infoBoxAttribute.Type switch
+            {
+                InfoBoxType.Warning => HelpBoxMessageType.Warning,
+                InfoBoxType.Error => HelpBoxMessageType.Error,
+                _ => HelpBoxMessageType.Info,
+            };
+
+            VisualElement root = new();
+            root.Add(new HelpBox(infoBoxAttribute.Message, messageType));
+            root.Add(new PropertyField(property));
+            return root;
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             InfoBoxAttribute infoBoxAttribute = (attribute as InfoBoxAttribute)!;
@@ -19,8 +37,7 @@ namespace Jeomseon.Attribute.Editor
                 _ => MessageType.None,
             };
 
-            // 텍스트의 높이를 계산
-            float textHeight = EditorStyles.helpBox.CalcHeight(new GUIContent(infoBoxAttribute.Message), position.width);
+            float textHeight = CalculateHelpBoxHeight(infoBoxAttribute.Message, position.width);
 
             Rect helpBoxRect = new(
                 position.x,
@@ -40,11 +57,18 @@ namespace Jeomseon.Attribute.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            // 텍스트의 높이를 계산
             InfoBoxAttribute infoBoxAttribute = (attribute as InfoBoxAttribute)!;
-            float textHeight = EditorStyles.helpBox.CalcHeight(new GUIContent(infoBoxAttribute.Message), EditorGUIUtility.currentViewWidth);
+            // currentViewWidth includes the Inspector margins and indent area. Use a
+            // conservative content width so wrapped text is never allocated too little height.
+            float contentWidth = Mathf.Max(1f, EditorGUIUtility.currentViewWidth - 40f);
+            float textHeight = CalculateHelpBoxHeight(infoBoxAttribute.Message, contentWidth);
             
             return textHeight + EditorGUI.GetPropertyHeight(property, label, true) + EditorGUIUtility.standardVerticalSpacing;
+        }
+
+        private static float CalculateHelpBoxHeight(string message, float width)
+        {
+            return EditorStyles.helpBox.CalcHeight(new GUIContent(message), Mathf.Max(1f, width));
         }
     }
 }

@@ -7,6 +7,7 @@ namespace Jeomseon.Attribute.Editor
     {
         string Name { get; }
         bool IsSupported { get; }
+        bool IsRunning { get; }
         void Start();
     }
 }

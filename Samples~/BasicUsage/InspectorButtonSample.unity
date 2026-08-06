@@ -41,7 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: effb8d64a1024d399a46530c4bdc0d2d, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e6d8b2f4a7c41f5b3d0e1826c9a74ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _message: Inspector Injection

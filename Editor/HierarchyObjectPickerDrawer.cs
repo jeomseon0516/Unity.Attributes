@@ -49,7 +49,7 @@ namespace Jeomseon.Attribute.Editor
             UnityEngine.Object targetObject = property.serializedObject.targetObject;
             string propertyPath = property.propertyPath;
             (int TargetId, string PropertyPath) key =
-                (targetObject.GetInstanceID(), propertyPath);
+                (targetObject.GetEntityId().GetHashCode(), propertyPath);
 
             if (!_dropdowns.TryGetValue(key, out ComponentDropdown dropdown))
             {

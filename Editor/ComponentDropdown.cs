@@ -186,7 +186,7 @@ namespace Jeomseon.Attribute.Editor
 
                 foreach (Component component in _rootObject.GetComponentsInChildren(_filterType, true))
                 {
-                    _itemsMap[component.gameObject.GetInstanceID()] = component.gameObject;
+                    _itemsMap[component.gameObject.GetEntityId().GetHashCode()] = component.gameObject;
                     addComponentToDropdown(component.gameObject, visited);
                 }
 
@@ -339,7 +339,7 @@ namespace Jeomseon.Attribute.Editor
 
         private TreeViewItem createItem(GameObject gameObject, int depth)
         {
-            return new TreeViewItem(gameObject.GetInstanceID(), depth, buildString(gameObject));
+            return new TreeViewItem(gameObject.GetEntityId().GetHashCode(), depth, buildString(gameObject));
         }
 
         private string buildString(GameObject go)

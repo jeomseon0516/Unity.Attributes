@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -19,13 +20,23 @@ namespace Jeomseon.Attribute.Editor
             if (editor == null || method == null)
                 return;
 
+            InvokeForTargets(editor.targets, method);
+        }
+
+        public static void InvokeForTargets(
+            IEnumerable<UnityEngine.Object> targets,
+            MethodInfo method)
+        {
+            if (targets == null || method == null)
+                return;
+
             Undo.IncrementCurrentGroup();
             int group = Undo.GetCurrentGroup();
             Undo.SetCurrentGroupName($"Invoke {method.Name}");
 
             try
             {
-                foreach (UnityEngine.Object target in editor.targets)
+                foreach (UnityEngine.Object target in targets)
                 {
                     EditorMethodInvocation invocation =
                         new(target, method);

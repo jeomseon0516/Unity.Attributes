@@ -46,16 +46,51 @@ namespace Jeomseon.Attribute.Tests
             }
         }
 
+        [Test]
+        public void InvokeOnInspectorChange_IgnoresUnchangedModification()
+        {
+            InspectorChangeTestTarget target =
+                ScriptableObject.CreateInstance<InspectorChangeTestTarget>();
+
+            try
+            {
+                UndoPropertyModification[] modifications =
+                {
+                    CreateModification(target, "_first", "1", "1")
+                };
+
+                InvokeOnInspectorChangeProcessor.OnPostprocessModifications(modifications);
+                InvokeOnInspectorChangeProcessor.InvokePendingMethods();
+
+                Assert.That(target.InvocationCount, Is.EqualTo(0));
+            }
+            finally
+            {
+                Object.DestroyImmediate(target);
+            }
+        }
+
         private static UndoPropertyModification CreateModification(
             Object target,
-            string propertyPath)
+            string propertyPath,
+            string previousValue = null,
+            string currentValue = null)
         {
             return new UndoPropertyModification
             {
+                previousValue = previousValue == null
+                    ? null
+                    : new PropertyModification
+                    {
+                        target = target,
+                        propertyPath = propertyPath,
+                        value = previousValue
+                    },
                 currentValue = new PropertyModification
                 {
                     target = target,
-                    propertyPath = propertyPath
+                    propertyPath = propertyPath,
+                    value = currentValue
                 }
             };
         }

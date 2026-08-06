@@ -31,6 +31,15 @@ namespace Jeomseon.Attribute.Editor
                 if (current?.target == null || string.IsNullOrEmpty(current.propertyPath))
                     continue;
 
+                // Unity can report a modification even when the serialized value did not
+                // actually change (for example, a CustomEditor calling ApplyModifiedProperties).
+                // Ignore those notifications so callbacks represent value changes only.
+                if (modification.previousValue != null &&
+                    current.value == modification.previousValue.value)
+                {
+                    continue;
+                }
+
                 UnityEngine.Object target = current.target;
                 IReadOnlyDictionary<
                     string,
@@ -116,7 +125,7 @@ namespace Jeomseon.Attribute.Editor
             {
                 unchecked
                 {
-                    return ((Target != null ? Target.GetInstanceID() : 0) * 397) ^
+                    return ((Target != null ? Target.GetEntityId().GetHashCode() : 0) * 397) ^
                            (Method != null ? Method.GetHashCode() : 0);
                 }
             }

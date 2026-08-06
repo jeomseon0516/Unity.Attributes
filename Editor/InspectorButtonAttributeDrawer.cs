@@ -6,7 +6,8 @@ namespace Jeomseon.Attribute.Editor
     /// <summary>
     /// Inspector Injection 영역에서 InspectorButton GUI를 호출합니다.
     /// </summary>
-    internal sealed class InspectorButtonInjectedDrawer : IInspectorInjectedDrawer
+    internal sealed class InspectorButtonInjectedDrawer
+        : IInspectorInjectedDrawer, IInspectorButtonPresenter
     {
         public void OnEnable(UnityEditorObjectEditor editor)
         {
@@ -14,8 +15,10 @@ namespace Jeomseon.Attribute.Editor
 
         public void OnInspectorGUI(UnityEditorObjectEditor editor)
         {
-            InspectorButtonGUI.Draw(editor);
+            Draw(editor);
         }
+
+        public void Draw(UnityEditorObjectEditor editor) => InspectorButtonGUI.Draw(editor);
 
         public void Dispose()
         {

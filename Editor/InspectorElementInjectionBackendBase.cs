@@ -21,11 +21,15 @@ namespace Jeomseon.Attribute.Editor
         private const double ScanIntervalSeconds = 0.5d;
 
         private readonly Dictionary<Type, EditorAccessor> _editorAccessors = new();
+        private readonly List<IMGUIContainer> _containers = new();
         private Type _inspectorWindowType;
         private double _nextScanTime;
         private bool _started;
+        private bool _disabled;
+        private bool _attachedAny;
 
         public abstract string Name { get; }
+        public bool IsRunning => _started && !_disabled && _attachedAny;
         protected abstract IReadOnlyList<string> EditorMemberNames { get; }
         protected virtual string InspectorElementClassName => "unity-inspector-element";
 
@@ -34,7 +38,7 @@ namespace Jeomseon.Attribute.Editor
             get
             {
                 EnsureInspectorWindowType();
-                return _inspectorWindowType != null;
+                return !_disabled && _inspectorWindowType != null;
             }
         }
 
@@ -43,19 +47,26 @@ namespace Jeomseon.Attribute.Editor
             if (_started || !IsSupported)
                 return;
 
-            _started = true;
-            EditorApplication.update += Update;
-            ScanInspectors();
+            try
+            {
+                _started = true;
+                EditorApplication.update += Update;
+                ScanInspectors();
+            }
+            catch (Exception exception)
+            {
+                Disable(exception);
+            }
         }
 
         public void Dispose()
         {
-            if (!_started)
-                return;
-
             EditorApplication.update -= Update;
+            RemoveAttachedContainers();
             _editorAccessors.Clear();
             _started = false;
+            _disabled = false;
+            _attachedAny = false;
         }
 
         private void Update()
@@ -64,7 +75,31 @@ namespace Jeomseon.Attribute.Editor
                 return;
 
             _nextScanTime = EditorApplication.timeSinceStartup + ScanIntervalSeconds;
-            ScanInspectors();
+            try
+            {
+                ScanInspectors();
+            }
+            catch (Exception exception)
+            {
+                Disable(exception);
+            }
+        }
+
+        private void Disable(Exception exception)
+        {
+            if (_disabled)
+                return;
+
+            _disabled = true;
+            EditorApplication.update -= Update;
+            RemoveAttachedContainers();
+            _editorAccessors.Clear();
+            _started = false;
+            _attachedAny = false;
+            Debug.LogWarning(
+                $"[Jeomseon Inspector Injection/{Name}] 내부 Inspector 접근에 실패해 " +
+                "Injection 기능만 비활성화합니다. 다른 Attribute 기능은 계속 사용할 수 있습니다.\n" +
+                exception);
         }
 
         private void ScanInspectors()
@@ -100,8 +135,15 @@ namespace Jeomseon.Attribute.Editor
             IMGUIContainer existing = inspectorElement.Q<IMGUIContainer>(ContainerName);
             if (existing?.userData is InjectionContext existingContext)
             {
-                existingContext.UpdateEditor(editor);
-                return;
+                if (existingContext.IsDisposed)
+                {
+                    inspectorElement.Remove(existing);
+                }
+                else
+                {
+                    existingContext.UpdateEditor(editor);
+                    return;
+                }
             }
 
             InjectionContext context = new(editor);
@@ -117,8 +159,27 @@ namespace Jeomseon.Attribute.Editor
                 userData = context
             };
 
-            container.RegisterCallback<DetachFromPanelEvent>(_ => context.Dispose());
+            container.RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                context.Dispose();
+                _containers.Remove(container);
+            });
             inspectorElement.Add(container);
+            _containers.Add(container);
+            _attachedAny = true;
+        }
+
+        private void RemoveAttachedContainers()
+        {
+            foreach (IMGUIContainer container in _containers.ToArray())
+            {
+                if (container.userData is InjectionContext context)
+                    context.Dispose();
+
+                container.RemoveFromHierarchy();
+            }
+
+            _containers.Clear();
         }
 
         private UnityObjectEditor GetEditor(VisualElement inspectorElement)
@@ -141,7 +202,8 @@ namespace Jeomseon.Attribute.Editor
             foreach (string memberName in EditorMemberNames)
             {
                 PropertyInfo property = elementType.GetProperty(memberName, Flags);
-                if (property != null && typeof(UnityObjectEditor).IsAssignableFrom(property.PropertyType))
+                if (property?.CanRead == true &&
+                    typeof(UnityObjectEditor).IsAssignableFrom(property.PropertyType))
                     return new EditorAccessor(property);
 
                 FieldInfo field = elementType.GetField(memberName, Flags);
@@ -211,6 +273,7 @@ namespace Jeomseon.Attribute.Editor
             }
 
             public bool HasDrawers => _drawers.Count > 0;
+            public bool IsDisposed => _disposed;
 
             public void UpdateEditor(UnityObjectEditor editor)
             {
