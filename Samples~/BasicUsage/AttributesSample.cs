@@ -1,5 +1,6 @@
 using Jeomseon.Attribute;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Jeomseon.Samples.Attributes
 {
@@ -7,28 +8,28 @@ namespace Jeomseon.Samples.Attributes
     {
         [InfoBox("Attributes 패키지가 Attribute Drawer를 함께 제공합니다.")]
         [InspectorName("표시 이름")]
-        [SerializeField] private string _message = "Hello";
+        [SerializeField, FormerlySerializedAs("_message")] private string message = "Hello";
 
         [ReadOnly]
-        [SerializeField] private int _changeCount;
+        [SerializeField, FormerlySerializedAs("_changeCount")] private int changeCount;
 
         [Min(0f)]
-        [SerializeField] private float _minimumBoundedValue;
+        [SerializeField, FormerlySerializedAs("_minimumBoundedValue")] private float minimumBoundedValue;
 
         [MaxValue(10)]
-        [SerializeField] private int _maximumBoundedValue;
+        [SerializeField, FormerlySerializedAs("_maximumBoundedValue")] private int maximumBoundedValue;
 
-        [InvokeOnInspectorChange(nameof(_message))]
+        [InvokeOnInspectorChange(nameof(message))]
         private void OnMessageChanged()
         {
-            _changeCount++;
-            Debug.Log($"값 변경 콜백: {_message}");
+            changeCount++;
+            Debug.Log($"값 변경 콜백: {message}");
         }
 
         [InspectorButton("메시지 출력")]
         private void PrintMessage()
         {
-            Debug.Log(_message);
+            Debug.Log(message);
         }
     }
 }

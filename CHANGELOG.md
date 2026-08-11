@@ -2,6 +2,16 @@
 
 모든 주요 변경 사항은 이 파일에 기록됩니다.
 
+## [Unreleased]
+
+## [0.3.2] - 2026-08-11
+
+- 워크스페이스 명명 규칙에 맞춰 `[SerializeField] private` 필드를 `_camelCase`에서 `camelCase`로
+  정리하고 기존 이름을 `[FormerlySerializedAs]`로 보존했습니다. Editor 내부 `private static
+  readonly` 캐시 필드(`InspectorButtonMethodCache`, `InvokeOnInspectorChangeProcessor`)도
+  `_camelCase`로 정리했습니다. 공개 C# API 변경은 없으며 기존 Scene·Prefab의 직렬화된 값은
+  그대로 유지됩니다.
+
 ## [0.3.0] - 2026-08-05
 
 ### Breaking Changes

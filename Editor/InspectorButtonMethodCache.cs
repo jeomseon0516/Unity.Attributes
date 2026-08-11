@@ -11,18 +11,18 @@ namespace Jeomseon.Attribute.Editor
     /// </summary>
     internal static class InspectorButtonMethodCache
     {
-        private static readonly Dictionary<Type, InspectorButtonMethod[]> Cache = new();
+        private static readonly Dictionary<Type, InspectorButtonMethod[]> _cache = new();
 
         public static InspectorButtonMethod[] Get(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            if (Cache.TryGetValue(type, out InspectorButtonMethod[] methods))
+            if (_cache.TryGetValue(type, out InspectorButtonMethod[] methods))
                 return methods;
 
             methods = Collect(type);
-            Cache.Add(type, methods);
+            _cache.Add(type, methods);
             return methods;
         }
 

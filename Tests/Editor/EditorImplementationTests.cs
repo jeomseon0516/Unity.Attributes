@@ -2,6 +2,7 @@ using Jeomseon.Attribute.Editor;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Jeomseon.Attribute.Tests
 {
@@ -31,8 +32,8 @@ namespace Jeomseon.Attribute.Tests
             {
                 UndoPropertyModification[] modifications =
                 {
-                    CreateModification(target, "_first"),
-                    CreateModification(target, "_second")
+                    CreateModification(target, "first"),
+                    CreateModification(target, "second")
                 };
 
                 InvokeOnInspectorChangeProcessor.OnPostprocessModifications(modifications);
@@ -56,7 +57,7 @@ namespace Jeomseon.Attribute.Tests
             {
                 UndoPropertyModification[] modifications =
                 {
-                    CreateModification(target, "_first", "1", "1")
+                    CreateModification(target, "first", "1", "1")
                 };
 
                 InvokeOnInspectorChangeProcessor.OnPostprocessModifications(modifications);
@@ -98,12 +99,12 @@ namespace Jeomseon.Attribute.Tests
 
     internal sealed class InspectorChangeTestTarget : ScriptableObject
     {
-        [SerializeField] private int _first;
-        [SerializeField] private int _second;
+        [SerializeField, FormerlySerializedAs("_first")] private int first;
+        [SerializeField, FormerlySerializedAs("_second")] private int second;
 
         public int InvocationCount { get; private set; }
 
-        [InvokeOnInspectorChange(nameof(_first), nameof(_second))]
+        [InvokeOnInspectorChange(nameof(first), nameof(second))]
         private void OnInspectorChange()
         {
             InvocationCount++;
