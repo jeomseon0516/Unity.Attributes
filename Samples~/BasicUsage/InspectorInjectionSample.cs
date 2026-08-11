@@ -1,15 +1,16 @@
 using Jeomseon.Attribute;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Jeomseon.Samples.Attributes
 {
     public sealed class InspectorInjectionSample : MonoBehaviour
     {
-        [SerializeField] private string _message = "Inspector Injection";
+        [SerializeField, FormerlySerializedAs("_message")] private string message = "Inspector Injection";
         [ReadOnly, SerializeField] private int _changeCount;
         [ReadOnly, SerializeField] private int _buttonClickCount;
 
-        [InvokeOnInspectorChange(nameof(_message))]
+        [InvokeOnInspectorChange(nameof(message))]
         private void OnMessageChanged()
         {
             _changeCount++;
@@ -18,7 +19,7 @@ namespace Jeomseon.Samples.Attributes
         [InspectorButton("Injection 버튼 실행")]
         private void InvokeFromInspector()
         {
-            Debug.Log($"{_message} - 버튼 클릭 횟수: {++_buttonClickCount}", this);
+            Debug.Log($"{message} - 버튼 클릭 횟수: {++_buttonClickCount}", this);
         }
     }
 }
