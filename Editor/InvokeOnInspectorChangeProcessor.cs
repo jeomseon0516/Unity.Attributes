@@ -15,7 +15,7 @@ namespace Jeomseon.Attribute.Editor
     [InitializeOnLoad]
     internal static class InvokeOnInspectorChangeProcessor
     {
-        private static readonly HashSet<InvocationKey> PendingInvocations = new();
+        private static readonly HashSet<InvocationKey> _pendingInvocations = new();
 
         static InvokeOnInspectorChangeProcessor()
         {
@@ -59,12 +59,12 @@ namespace Jeomseon.Attribute.Editor
                 foreach (EditorTriggeredMethod<InvokeOnInspectorChangeAttribute> method in
                          methods)
                 {
-                    PendingInvocations.Add(
+                    _pendingInvocations.Add(
                         new InvocationKey(target, method.Method));
                 }
             }
 
-            if (PendingInvocations.Count > 0)
+            if (_pendingInvocations.Count > 0)
             {
                 EditorApplication.delayCall -= InvokePendingMethods;
                 EditorApplication.delayCall += InvokePendingMethods;
@@ -81,12 +81,12 @@ namespace Jeomseon.Attribute.Editor
 
         internal static void InvokePendingMethods()
         {
-            if (PendingInvocations.Count == 0)
+            if (_pendingInvocations.Count == 0)
                 return;
 
-            InvocationKey[] invocations = new InvocationKey[PendingInvocations.Count];
-            PendingInvocations.CopyTo(invocations);
-            PendingInvocations.Clear();
+            InvocationKey[] invocations = new InvocationKey[_pendingInvocations.Count];
+            _pendingInvocations.CopyTo(invocations);
+            _pendingInvocations.Clear();
 
             foreach (InvocationKey invocation in invocations)
             {
