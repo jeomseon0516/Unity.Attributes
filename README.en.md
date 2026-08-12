@@ -17,6 +17,8 @@ Reusable inspector attributes with their editor implementations for Unity projec
 - Display and editing: `InfoBox`, `ReadOnly`, `SpritePreview`, `Vector2Slider`
 - Value constraint: `MaxValue` (use Unity's built-in `Min`)
 - Object assignment: `GetOrAddComponent`, `HierarchyObjectPicker`
+- Polymorphic references: `SerializeReferenceSelector` (concrete type selection for single
+  `SerializeReference` fields and lists)
 - Method invocation: `InspectorButton`, `InvokeOnInspectorChange`
 
 ## Sample verification
@@ -33,6 +35,11 @@ For Injection regression checks:
 
 `InvokeOnInspectorChange` delays a parameterless method call when the Inspector or an
 editor tool changes a serialized field through Undo. It is not a runtime value-change event.
+
+Use `SerializeReferenceSelector` together with `[SerializeReference]`. Selectable concrete types
+need a public parameterless constructor. Choosing `(None)` assigns `null` to the reference or list
+element. Constructor selection and argument input are not supported yet. For now, provide a
+parameterless constructor and edit the serialized fields shown after creating the instance.
 
 Use Unity's built-in `MinAttribute` for a minimum-only numeric constraint. This package
 provides `MaxValueAttribute` for the corresponding maximum-only constraint while keeping
