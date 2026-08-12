@@ -31,3 +31,12 @@ Injection 수명 검증은 다음 매트릭스로 진행합니다.
 - Undo 한 번으로 컴포넌트 추가와 필드 연결을 되돌릴 수 있는지 확인합니다.
 - `HierarchyObjectPicker` 드롭다운에서 `Candidate A`, `Candidate B`를 선택해
   GameObject 및 Transform 필드에 올바르게 할당되는지 확인합니다.
+
+`SerializeReferenceSelectorSample` Scene에서는 `Serialize Reference Selector Sample` GameObject를
+선택해 다음 동작을 확인합니다.
+
+- `Selected Effect` 드롭다운에서 `DamageAttributeEffect`, `HealAttributeEffect`, `(None)`을 선택합니다.
+- `Effect Sequence`의 Size와 각 원소의 구체 타입을 변경하고 서로 다른 하위 필드를 편집합니다.
+- Scene을 저장하고 다시 열어 선택한 구체 타입과 값이 유지되는지 확인합니다.
+- Play Mode에서 타입과 값을 변경한 뒤 Play Mode를 종료해, 진입 전 Edit Mode 값으로 복원되는지
+  확인합니다.

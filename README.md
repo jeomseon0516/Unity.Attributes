@@ -23,6 +23,7 @@
 - 표시·편집: `InfoBox`, `ReadOnly`, `SpritePreview`, `Vector2Slider`
 - 값 제한: `MaxValue` (`Min`은 Unity 기본 API 사용)
 - 오브젝트 연결: `GetOrAddComponent`, `HierarchyObjectPicker`
+- 다형성 참조: `SerializeReferenceSelector` (`SerializeReference` 단일 필드·리스트의 구체 타입 선택)
 - 메서드 실행: `InspectorButton`, `InvokeOnInspectorChange`
 - 각 Attribute의 PropertyDrawer, Inspector UI 및 메서드 실행 구현
 
@@ -40,6 +41,11 @@ Injection 회귀 확인은 다음 순서로 진행합니다.
 
 `InvokeOnInspectorChange`는 Inspector나 Editor 도구가 Undo를 통해 직렬화 필드를
 변경했을 때 매개변수 없는 메서드를 지연 호출합니다. 런타임 값 변경 알림 용도가 아닙니다.
+
+`SerializeReferenceSelector`는 `[SerializeReference]`와 함께 사용합니다. 선택 가능한 구체 타입에는
+public 매개변수 없는 생성자가 필요하며, `(None)`을 선택하면 참조 또는 리스트 원소가 `null`이 됩니다.
+매개변수 생성자 선택과 인자 입력 UI는 아직 지원하지 않습니다. 현재는 소비 타입에 매개변수 없는
+생성자를 추가하고 생성 후 표시되는 직렬화 필드를 Inspector에서 편집합니다.
 
 ## 패키지 경계
 

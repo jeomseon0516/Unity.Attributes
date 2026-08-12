@@ -1,0 +1,12 @@
+{
+  "name": "Jeomseon.Unity.Attributes.Tests.RuntimeFixtures",
+  "rootNamespace": "Jeomseon.Attribute.Tests",
+  "references": [
+    "Jeomseon.Unity.Attributes"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false,
+  "noEngineReferences": false
+}

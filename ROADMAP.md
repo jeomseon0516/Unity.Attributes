@@ -37,6 +37,8 @@
 - UI Toolkit Inspector를 명시적으로 사용하는 `AttributesSample` Scene을 추가합니다.
 - InfoBox·MaxValue·ReadOnly를 한 화면에서 확인할 수 있는 재현 가능한 수동 검증 절차를 README에 기록합니다.
 - Injection 활성/비활성, Assembly Reload, Domain Reload 조합을 반복 실행하는 검증 체크리스트를 Sample 문서에 추가합니다.
+- `SerializeReferenceSelectorSample` Scene에서 단일·리스트 구체 타입 선택, Scene 재오픈 후 직렬화 유지,
+  Play Mode 종료 후 Edit Mode 값 복원을 검증합니다.
 
 ### P3-02 — API·문서 정리 (완료)
 
@@ -48,3 +50,14 @@
 
 - 실제 프로젝트에서 Reflection 비용과 Inspector 갱신 빈도를 측정합니다.
 - 측정 결과가 유의미할 때만 생성 코드 도입 범위와 Unity Editor 호환 전략을 설계합니다.
+
+### P3-04 — SerializeReferenceSelector 매개변수 생성자 지원 (추후 작업)
+
+- 현재 Selector는 `Activator.CreateInstance(Type)`을 사용하므로 public 매개변수 없는 생성자가 있는
+  구체 타입만 목록에 표시합니다.
+- 생성자 오버로드 선택, 매개변수별 Inspector 입력 UI, 기본값·선택적 매개변수, Unity Object 참조,
+  Undo 및 다중 오브젝트 편집 계약을 먼저 설계한 뒤 지원 여부를 결정합니다.
+- 생성자 인자는 managed-reference 데이터로 자동 보존되지 않으므로, 생성 직후 객체 필드에 값을
+  반영하는 방식과 별도의 생성 설정 직렬화 방식 중 하나를 명시적으로 선택해야 합니다.
+- 지원 전까지 소비 타입은 매개변수 없는 생성자를 제공하고 직렬화 필드에 기본값을 두는 방식으로
+  대응합니다.
