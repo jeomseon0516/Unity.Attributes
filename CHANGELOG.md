@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+- `[SerializeReferenceSelector]`를 추가했습니다. `[SerializeReference]` 단일 필드와 리스트에서
+  검색 가능한 구체 타입 드롭다운, `(None)`, Undo를 지원합니다.
+- Play Mode 종료 후 managed-reference 복원을 비교하는 Plain/Selector 회귀 테스트와 실제 타입·값의
+  Scene 저장·재오픈 및 Play Mode 복원을 확인하는 Sample Scene을 추가했습니다.
+
 ## [0.3.2] - 2026-08-11
 
 - 워크스페이스 명명 규칙에 맞춰 `[SerializeField] private` 필드를 `_camelCase`에서 `camelCase`로

@@ -3,7 +3,8 @@
   "rootNamespace": "Jeomseon.Attribute.Tests",
   "references": [
     "Jeomseon.Unity.Attributes",
-    "Jeomseon.Unity.Attributes.Editor"
+    "Jeomseon.Unity.Attributes.Editor",
+    "Jeomseon.Unity.Attributes.Tests.RuntimeFixtures"
   ],
   "includePlatforms": [
     "Editor"
