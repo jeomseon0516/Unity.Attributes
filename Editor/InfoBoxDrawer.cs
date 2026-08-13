@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     [CustomPropertyDrawer(typeof(InfoBoxAttribute))]
     internal sealed class InfoBoxDrawer : PropertyDrawer

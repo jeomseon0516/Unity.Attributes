@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// 공통 Trigger 메서드 캐시를 필드 이름별 OnChangedValue 메서드 인덱스로 변환합니다.

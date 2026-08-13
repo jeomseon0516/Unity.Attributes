@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using UnityEngine;
 
-namespace Jeomseon.Attribute
+namespace Jeomseon.Unity.Attributes
 {
     /// <summary>
     /// .. [SerializeReference] 필드/리스트에 붙이면 Inspector에 구체 타입을 선택할 수 있는

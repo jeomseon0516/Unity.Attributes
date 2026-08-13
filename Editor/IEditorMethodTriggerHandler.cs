@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using System;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// Trigger 종류별 매개변수 정책을 Registry에 제공하는 공통 계약입니다.

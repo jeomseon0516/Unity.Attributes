@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Jeomseon.Attribute
+namespace Jeomseon.Unity.Attributes
 {
     /// <summary>
     /// Inspector 또는 Editor 도구에서 지정한 직렬화 필드가 Undo를 통해 변경되면 이 메서드를 호출합니다.

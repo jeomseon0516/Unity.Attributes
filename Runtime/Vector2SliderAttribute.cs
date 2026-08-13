@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using UnityEngine;
 
-namespace Jeomseon.Attribute
+namespace Jeomseon.Unity.Attributes
 {
     [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false), Conditional("UNITY_EDITOR")]
     public sealed class Vector2SliderAttribute : PropertyAttribute

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Jeomseon.Attribute;
+using Jeomseon.Unity.Attributes;
 using UnityEngine;
 
 namespace Jeomseon.Samples.Attributes

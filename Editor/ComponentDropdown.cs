@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
-using Jeomseon.Text;
+using Jeomseon.Unity.Core.Text;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -11,7 +11,7 @@ using TreeView = UnityEditor.IMGUI.Controls.TreeView<int>;
 using TreeViewItem = UnityEditor.IMGUI.Controls.TreeViewItem<int>;
 using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     internal sealed class ComponentDropdown : TreeView
     {

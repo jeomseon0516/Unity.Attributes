@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// .. baseType을 구현/상속하는 구체 타입들을 검색 가능한 트리로 보여줍니다. 클래스
