@@ -1,4 +1,5 @@
-using Jeomseon.Attribute.Editor;
+using Jeomseon.Unity.Attributes;
+using Jeomseon.Unity.Attributes.Editor;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;

@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using System;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// 아직 인자를 제공하지 않는 Trigger의 공통 매개변수 정책입니다.

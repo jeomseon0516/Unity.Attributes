@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
-using Jeomseon.Attribute;
-using Jeomseon.Editor;
+using Jeomseon.Unity.Attributes;
+using Jeomseon.Unity.Attributes.Editor.ConstructorPipelines;
+using Jeomseon.Unity.EditorToolkit.Editor;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     [CustomPropertyDrawer(typeof(SerializeReferenceSelectorAttribute))]
     internal sealed class SerializeReferenceSelectorDrawer : PropertyDrawer
@@ -149,7 +150,7 @@ namespace Jeomseon.Attribute.Editor
             }
 
             List<Type> concreteTypes = EditorTypeDiscovery.GetConcreteTypesDerivedFrom(fieldType)
-                .Where(type => type.GetConstructor(Type.EmptyTypes) is not null)
+                .Where(ConstructorParameterPipelineRegistry.HasConstructibleConstructor)
                 .ToList();
             TypeSelectorAdvancedDropdown dropdown = new(state, fieldType, concreteTypes);
 
@@ -158,17 +159,53 @@ namespace Jeomseon.Attribute.Editor
 
             dropdown.OnTypeSelected += selectedType =>
             {
-                Undo.RecordObjects(serializedObject.targetObjects, "Select Reference Type");
-                SerializedProperty targetProperty = serializedObject.FindProperty(path);
-                targetProperty.managedReferenceValue = Activator.CreateInstance(selectedType);
-                serializedObject.ApplyModifiedProperties();
+                ConstructorInfo[] constructibleConstructors = ConstructorParameterPipelineRegistry.GetConstructibleConstructors(selectedType);
+
+                // 생성 가능한 생성자가 매개변수 없는 것 하나뿐이면 기존과 동일하게 즉시 생성합니다.
+                // 그 외(오버로드가 여럿이거나, 유일한 생성자가 매개변수를 요구하는 경우)에는
+                // AdvancedDropdown과 동일한 방식의 뜬 팝업 창에서 값을 다 채우고 "생성"을 눌러야
+                // 실제로 대입됩니다 — 인라인으로 그리면 아직 입력 중인데도 이미 반영된 것처럼 보일
+                // 수 있어 별도 창으로 분리했습니다.
+                if (constructibleConstructors.Length == 1 && constructibleConstructors[0].GetParameters().Length == 0)
+                {
+                    if (!ManagedReferenceAssignmentService.TryAssign(
+                        serializedObject,
+                        path,
+                        () => constructibleConstructors[0].Invoke(Array.Empty<object>()),
+                        "Select Reference Type",
+                        out string errorMessage))
+                    {
+                        EditorUtility.DisplayDialog("생성 실패", errorMessage, "확인");
+                    }
+                    return;
+                }
+
+                PendingConstructorSelection pending = new(selectedType, constructibleConstructors);
+                if (constructibleConstructors.Length == 1)
+                {
+                    ConstructorSelectionService.ChooseConstructor(pending, 0);
+                }
+
+                PopupWindow.Show(activatorRect, new ConstructorArgumentPopupWindowContent(pending,
+                    () =>
+                    {
+                        ManagedReferenceAssignmentService.TryAssign(
+                            serializedObject,
+                            path,
+                            () => pending.ChosenConstructor.Invoke(pending.ParameterValues),
+                            "Select Reference Type",
+                            out string errorMessage);
+                        return errorMessage;
+                    }));
             };
             dropdown.OnCleared += () =>
             {
-                Undo.RecordObjects(serializedObject.targetObjects, "Clear Reference Type");
-                SerializedProperty targetProperty = serializedObject.FindProperty(path);
-                targetProperty.managedReferenceValue = null;
-                serializedObject.ApplyModifiedProperties();
+                ManagedReferenceAssignmentService.TryAssign(
+                    serializedObject,
+                    path,
+                    () => null,
+                    "Clear Reference Type",
+                    out _);
             };
 
             dropdown.Show(activatorRect);

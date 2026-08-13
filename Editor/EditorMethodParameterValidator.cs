@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// 모든 Editor Method Trigger가 공유하는 CLR 매개변수 제약을 검사합니다.

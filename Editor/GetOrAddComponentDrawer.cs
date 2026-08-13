@@ -2,9 +2,9 @@
 using System;
 using UnityEngine;
 using UnityEditor;
-using Jeomseon.Editor.Extensions;
+using Jeomseon.Unity.EditorToolkit.Editor.Extensions;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     [CustomPropertyDrawer(typeof(GetOrAddComponentAttribute), false)]
     internal sealed class GetOrAddComponentDrawer : PropertyDrawer

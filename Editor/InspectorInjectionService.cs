@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// 버전별 Inspector Injection 백엔드의 생명주기를 관리합니다.

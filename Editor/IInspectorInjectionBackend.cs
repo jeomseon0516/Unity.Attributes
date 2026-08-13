@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using System;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     internal interface IInspectorInjectionBackend : IDisposable
     {

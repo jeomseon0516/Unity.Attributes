@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using Jeomseon.Attribute;
-using Jeomseon.Editor;
+using Jeomseon.Unity.Attributes;
+using Jeomseon.Unity.EditorToolkit.Editor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     using GUI = UnityEngine.GUI;
 

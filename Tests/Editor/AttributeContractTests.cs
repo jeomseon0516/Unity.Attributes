@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Jeomseon.Unity.Attributes;
 using NUnit.Framework;
 
 namespace Jeomseon.Attribute.Tests

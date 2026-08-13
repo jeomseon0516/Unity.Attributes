@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using System.Reflection;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// InspectorButton을 그리거나 호출하는 데 필요한 메서드 메타데이터입니다.

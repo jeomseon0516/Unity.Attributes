@@ -1,4 +1,4 @@
-using Jeomseon.Attribute;
+using Jeomseon.Unity.Attributes;
 using UnityEngine;
 using UnityEngine.Serialization;
 

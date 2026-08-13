@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using Jeomseon.Attribute;
+using Jeomseon.Unity.Attributes;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     [CustomPropertyDrawer(typeof(SpritePreviewAttribute))]
     internal sealed class SpritePreviewDrawer : PropertyDrawer

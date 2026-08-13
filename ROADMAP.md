@@ -51,13 +51,36 @@
 - 실제 프로젝트에서 Reflection 비용과 Inspector 갱신 빈도를 측정합니다.
 - 측정 결과가 유의미할 때만 생성 코드 도입 범위와 Unity Editor 호환 전략을 설계합니다.
 
-### P3-04 — SerializeReferenceSelector 매개변수 생성자 지원 (추후 작업)
+### P3-04 — SerializeReferenceSelector 매개변수 생성자 지원 (완료, Unity 실행 검증 통과)
 
-- 현재 Selector는 `Activator.CreateInstance(Type)`을 사용하므로 public 매개변수 없는 생성자가 있는
-  구체 타입만 목록에 표시합니다.
-- 생성자 오버로드 선택, 매개변수별 Inspector 입력 UI, 기본값·선택적 매개변수, Unity Object 참조,
-  Undo 및 다중 오브젝트 편집 계약을 먼저 설계한 뒤 지원 여부를 결정합니다.
-- 생성자 인자는 managed-reference 데이터로 자동 보존되지 않으므로, 생성 직후 객체 필드에 값을
-  반영하는 방식과 별도의 생성 설정 직렬화 방식 중 하나를 명시적으로 선택해야 합니다.
-- 지원 전까지 소비 타입은 매개변수 없는 생성자를 제공하고 직렬화 필드에 기본값을 두는 방식으로
-  대응합니다.
+- 타입 선택 시 생성 가능한(모든 매개변수를 파이프라인이 지원하는) 생성자가 매개변수 없는 것
+  하나뿐이면 기존과 동일하게 `ConstructorInfo.Invoke`로 즉시 생성합니다. 그 외에는 타입 버튼에
+  앵커된 AdvancedDropdown과 동일한 방식의 `ConstructorArgumentPopupWindowContent` 팝업 창이 뜨고,
+  값을 다 채운 뒤 "생성" 버튼을 눌러야 `managedReferenceValue`에 1회만 대입·Undo 기록됩니다(입력
+  도중에는 SerializedProperty를 전혀 건드리지 않으며, 창 밖을 클릭해 닫아도 아무 것도 대입되지
+  않음). 필드를 인라인으로 확장해 그리는 대신 별도 창으로 분리한 이유는, 인라인 폼이 아직 입력이
+  끝나지 않았는데도 이미 값이 반영된 것처럼 보이는 UX 모호함이 있었기 때문입니다.
+- 생성자 오버로드가 여럿이면 `ConstructorArgumentFormGUI`가 드롭다운으로 직접 고르게 합니다.
+- 매개변수별 Inspector 입력 UI는 `ISerializeReferenceSelectorConstructorParameterPipeline`
+  구현체가 담당하며 TypeCache로 자동 검색됩니다. int/float/double/bool/string/enum/
+  `UnityEngine.Object` 참조/`Vector2`/`Vector3`/`Vector4`/`Color`를 기본 제공하고, 소비 패키지가
+  자체 타입을 위한 파이프라인을 추가할 수 있습니다. 같은 매개변수 타입을 처리하는 파이프라인이
+  둘 이상이면 필드 옆 선택 버튼으로 고르며,
+  `[SerializeReferenceSelectorConstructorPipelineName]`으로 표시 이름을 지정할 수 있습니다.
+- 기본값·선택적 매개변수는 `ParameterInfo.HasDefaultValue`/`DefaultValue`를 그대로 사용합니다.
+- 생성자 인자는 "생성 직후 객체 필드에 값을 반영하는 방식"을 택했습니다 — 생성자 자신이 인자를
+  자신의 직렬화 필드에 대입하는 일반적인 C# 관례에 의존하며, 별도의 생성 설정 직렬화는 두지
+  않습니다.
+- **사용자 Unity Editor 실행 검증 통과**: 오버로드 드롭다운, 매개변수 필드(int/bool/double/Color/
+  Vector2/Vector3/Vector4/enum/`UnityEngine.Object`), 선택적 기본값, 생성자 예외 표시, Undo(생성
+  취소 시 이전 상태 복원), 다중 오브젝트 선택 시 각 대상에 독립된 인스턴스가 생성되는지를 Sample의
+  `StunAttributeEffect`/`ElementalAttributeEffect`로 확인했습니다.
+- 생성자 호출과 managed-reference 적용을 `ConstructorSelectionService`/
+  `ManagedReferenceAssignmentService`로 분리했습니다. 다중 선택 대상의 인스턴스를 모두 먼저 생성한
+  뒤 적용하므로 중간 생성 실패 시 어떤 대상도 바뀌지 않으며, 대상마다 독립 인스턴스를 사용합니다.
+- 팝업에 타입 제목·단일 생성자 시그니처·높이 제한 스크롤·생성자 예외 HelpBox를 추가했습니다.
+  매개변수 없는 생성자의 예외는 대화상자로 표시합니다.
+- EditMode 테스트(`SerializeReferenceConstructorTests`, 11개)를 추가해 오버로드 입력과 선택적
+  기본값, 파이프라인 후보·표시 이름과 Object/Enum/Vector 기본값, 생성 전 불변, 대상별 독립
+  인스턴스, 중간 실패 시 전체 불변, Undo, 생성자 예외 메시지를 검증합니다. 사용자가 Unity Test
+  Runner에서 11개 전체 PASS를 확인했습니다.

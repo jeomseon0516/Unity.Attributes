@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// Trigger가 공통 호출기로 전달하는 대상, 메서드 및 인자입니다.

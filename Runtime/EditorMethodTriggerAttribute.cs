@@ -1,6 +1,6 @@
 using System;
 
-namespace Jeomseon.Attribute
+namespace Jeomseon.Unity.Attributes
 {
     /// <summary>
     /// Editor 이벤트나 Inspector UI를 통해 메서드 호출을 요청하는 Trigger Attribute의 기반입니다.
