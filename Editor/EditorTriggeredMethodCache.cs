@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// Unity TypeCache를 사용해 Trigger 메서드를 찾고 대상 타입의 상속 계층별로 캐시합니다.

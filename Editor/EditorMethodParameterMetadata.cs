@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// Trigger Handler가 인자 입력 또는 이벤트 인자 바인딩에 사용하는 매개변수 정보입니다.

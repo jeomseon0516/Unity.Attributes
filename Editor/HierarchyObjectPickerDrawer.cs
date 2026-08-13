@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     using GUI = UnityEngine.GUI;
 

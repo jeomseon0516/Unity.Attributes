@@ -1,6 +1,6 @@
 {
   "name": "Jeomseon.Unity.Attributes",
-  "rootNamespace": "Jeomseon.Attribute",
+  "rootNamespace": "Jeomseon.Unity.Attributes",
   "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],

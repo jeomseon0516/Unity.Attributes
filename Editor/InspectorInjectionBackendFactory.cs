@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     internal static class InspectorInjectionBackendFactory
     {

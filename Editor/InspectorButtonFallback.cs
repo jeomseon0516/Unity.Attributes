@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEditorObjectEditor = global::UnityEditor.Editor;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// Inspector Injection을 사용할 수 없을 때 Inspector 헤더에 버튼을 표시합니다.

@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// Editor Method Trigger 기능이 공유하는 메서드와 매개변수 메타데이터입니다.

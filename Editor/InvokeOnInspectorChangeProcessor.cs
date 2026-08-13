@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 
-namespace Jeomseon.Attribute.Editor
+namespace Jeomseon.Unity.Attributes.Editor
 {
     /// <summary>
     /// 지정한 직렬화 필드의 에디터 변경을 감지하고 연결된 메서드를 호출합니다.
