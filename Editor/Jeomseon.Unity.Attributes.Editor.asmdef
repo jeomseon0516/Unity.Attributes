@@ -1,6 +1,6 @@
 {
   "name": "Jeomseon.Unity.Attributes.Editor",
-  "rootNamespace": "Jeomseon.Unity.Attributes",
+  "rootNamespace": "Jeomseon.Unity.Attributes.Editor",
   "references": [
     "Jeomseon.Unity.Attributes",
     "Jeomseon.Unity.EditorToolkit",
