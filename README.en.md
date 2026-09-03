@@ -2,6 +2,10 @@
 
 Reusable inspector attributes with their editor implementations for Unity projects.
 
+## Requirements
+
+- Unity 6000.6.0f1 or newer
+
 ## Installation
 
 ```json
