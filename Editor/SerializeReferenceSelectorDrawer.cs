@@ -247,7 +247,7 @@ namespace Jeomseon.Unity.Attributes.Editor
         }
 
         // -------------------- managedReferenceFieldTypename → Type 해석 --------------------
-        // SerializedProperty에는 Type을 직접 돌려주는 API가 없어(Unity 6000.5 기준),
+        // SerializedProperty에는 Type을 직접 돌려주는 API가 없어(Unity 6000.6 기준),
         // "<AssemblyName> <Namespace.TypeName>" 형식의 문자열을 직접 파싱합니다.
 
         private static Type GetManagedReferenceFieldType(SerializedProperty property)
