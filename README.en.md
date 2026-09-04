@@ -6,14 +6,33 @@ Reusable inspector attributes with their editor implementations for Unity projec
 
 - Unity 6000.6.0f1 or newer
 
-## Installation
+## Install via OpenUPM
+
+Register the OpenUPM scoped registry once in your project's `Packages/manifest.json`.
 
 ```json
 {
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.jeomseon"
+      ]
+    }
+  ],
   "dependencies": {
-    "com.jeomseon.unity.attributes": "0.3.0"
+    "com.jeomseon.unity.attributes": "0.4.2"
   }
 }
+```
+
+## Install via Git URL
+
+Enter the following URL in Unity Package Manager's `Install package from git URL`.
+
+```text
+https://github.com/jeomseon0516/Unity.Attributes.git#v0.4.2
 ```
 
 ## Included APIs
