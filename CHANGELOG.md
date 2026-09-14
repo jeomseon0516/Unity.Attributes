@@ -27,7 +27,7 @@
 
 - **(Breaking)** 네임스페이스를 `Jeomseon.Attribute`(Runtime)/`Jeomseon.Attribute.Editor`(Editor) →
   `Jeomseon.Unity.Attributes`/`Jeomseon.Unity.Attributes.Editor`로 변경했습니다(하위
-  `.ConstructorPipelines`도 동일). 워크스페이스 전체 네임스페이스 규칙(`AGENTS.md` 참고)을 적용한
+  `.ConstructorPipelines`도 동일). 패키지 네임스페이스 규칙을 적용한
   것으로, 폴더 구조 변경은 없습니다. `Tests`의 `Jeomseon.Attribute.Tests`는 이번 규칙 적용 범위 밖이라
   그대로 두었지만, 기존에 `Jeomseon.Attribute`의 하위 네임스페이스라는 점을 이용해 `using` 없이
   Runtime/Editor 타입을 암시적으로 찾던 테스트 파일 다수가 이번 변경으로 더 이상 부모-자식 관계가
