@@ -4,7 +4,8 @@
 
 ## UI Toolkit 및 Reload 검증
 
-`AttributesSample` Scene에서 오브젝트를 선택해 다음 항목을 한 화면에서 확인합니다.
+`AttributesSample.cs`는 다음 Attribute의 선언 예제입니다. 실행 가능한 Scene의 검증 절차는 아래
+`InspectorButtonSample`, `ObjectAssignmentSample`, `SerializeReferenceSelectorSample` 항목을 따릅니다.
 
 - `InfoBox`: 안내 메시지가 표시되고 좁은 Inspector 폭에서 여러 줄로 줄바꿈됩니다.
 - `MaxValue`: 최대값을 초과해 입력해도 지정한 상한으로 제한됩니다.
