@@ -4,6 +4,10 @@
 
 Configures Inspector display, constraints, references, invocation, and SerializeReference construction with attributes; declarations and Editor implementations are separate assemblies.
 
+![SerializeReference construction and assignment](Documentation~/Images/usage-flow.svg)
+
+Constructor input is separate from assignment. Keep the old value until construction succeeds and create an independent instance for each selected target.
+
 ## Quick start
 
 Annotate fields/methods, edit or invoke in the Inspector, then apply through SerializedProperty/Undo. Confirm parameterized construction in its popup before assignment.
@@ -193,6 +197,13 @@ the standard numeric field UI.
   `LocalizedStringAttribute` belongs to `com.jeomseon.unity.localization`, and
   `ResetOnPoolReleaseAttribute` belongs to `com.jeomseon.unity.game-object-pooling`.
 - The Runtime asmdef does not reference Editor assemblies; editor dependencies are isolated to the Editor asmdef.
+
+## Verify the behavior
+
+1. Open `SerializeReferenceSelectorSample.unity` from Basic Usage and select StunAttributeEffect in Selected Effect.
+2. Enter duration/description in the constructor popup and create the value. Verify assignment and persistence after saving and reopening the Scene.
+3. Select another type and cancel to verify that the previous value remains; use Undo to restore the previous state.
+4. Construct with two Sample objects selected, then edit only one. The other target must retain its own value.
 
 ## Samples
 

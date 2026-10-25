@@ -4,6 +4,10 @@
 
 Inspector 표시·값 제한·참조 연결·메서드 실행·SerializeReference 생성을 Attribute로 구성합니다. 선언과 Editor 구현을 어셈블리로 분리합니다.
 
+![SerializeReference construction and assignment](Documentation~/Images/usage-flow.svg)
+
+생성자 입력과 할당은 분리됩니다. 생성 성공 전에 기존 값을 바꾸지 않으며 다중 선택 대상마다 독립 인스턴스를 만듭니다.
+
 ## 빠르게 시작하기
 
 필드/메서드에 Attribute 선언 → Inspector에서 편집 또는 실행 → SerializedProperty/Undo 경로로 반영. SerializeReference 생성자 인자는 별도 팝업에서 확인 후 적용합니다.
@@ -195,6 +199,13 @@ Injection 회귀 확인은 다음 순서로 진행합니다.
   `com.jeomseon.unity.localization`, `ResetOnPoolReleaseAttribute`는
   `com.jeomseon.unity.game-object-pooling`에서 제공합니다.
 - Runtime asmdef는 Editor 어셈블리를 참조하지 않으며 Editor 의존성은 Editor asmdef에만 제한됩니다.
+
+## 동작 확인
+
+1. Basic Usage의 `SerializeReferenceSelectorSample.unity`를 열고 Selected Effect에서 StunAttributeEffect를 선택합니다.
+2. 생성자 팝업에서 duration/description을 입력하고 생성합니다. 입력값이 할당되고 Scene 저장·재오픈 후 유지되는지 확인합니다.
+3. 다른 타입을 선택한 뒤 취소해 이전 값을 유지하는지, Undo로 이전 상태에 돌아가는지 확인합니다.
+4. 두 Sample 객체를 함께 선택해 생성한 뒤 한쪽 값만 변경합니다. 다른 대상의 값이 함께 변하지 않아야 합니다.
 
 ## 샘플 실행
 
