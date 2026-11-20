@@ -10,6 +10,10 @@ namespace Jeomseon.Samples.Attributes
         [ReadOnly, SerializeField] private int _changeCount;
         [ReadOnly, SerializeField] private int _buttonClickCount;
 
+        [SerializeField] private bool showDetails;
+        [ShowIf(nameof(showDetails))]
+        [SerializeField] private string details = "Visible when Show Details is enabled.";
+
         [InvokeOnInspectorChange(nameof(message))]
         private void OnMessageChanged()
         {
