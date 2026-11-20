@@ -7,9 +7,13 @@ using Jeomseon.Unity.Core.Text;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 using TreeView = UnityEditor.IMGUI.Controls.TreeView<int>;
 using TreeViewItem = UnityEditor.IMGUI.Controls.TreeViewItem<int>;
 using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
+using ElementTreeView = UnityEngine.UIElements.TreeView;
+using PopupWindow = UnityEditor.PopupWindow;
 
 namespace Jeomseon.Unity.Attributes.Editor
 {
@@ -23,6 +27,7 @@ namespace Jeomseon.Unity.Attributes.Editor
 
             // ✅ horizontal-only scroll state
             private float _hScroll;
+            private bool _usesUIToolkit;
 
             public ComponentDropdownPopupContent(ComponentDropdown dropdown)
             {
@@ -39,8 +44,93 @@ namespace Jeomseon.Unity.Attributes.Editor
                 return new Vector2(300f, Mathf.Clamp(_dropdown.ItemCount * _dropdown.rowHeight, 200, 800));
             }
 
+            public override VisualElement CreateGUI()
+            {
+                _usesUIToolkit = true;
+                float lineHeight = EditorGUIUtility.singleLineHeight;
+
+                VisualElement root = new();
+                root.style.flexGrow = 1f;
+                root.style.paddingTop = 3f;
+
+                ToolbarSearchField searchField = new();
+                searchField.style.width = Length.Percent(90f);
+                searchField.style.alignSelf = Align.Center;
+                searchField.style.flexShrink = 0f;
+                searchField.SetValueWithoutNotify(_dropdown.searchString ?? string.Empty);
+                root.Add(searchField);
+
+                Label title = new("Nested Object");
+                title.style.height = lineHeight;
+                title.style.flexShrink = 0f;
+                title.style.marginTop = lineHeight * 0.35f;
+                title.style.unityFontStyleAndWeight = FontStyle.Bold;
+                title.style.unityTextAlign = TextAnchor.MiddleCenter;
+                root.Add(title);
+
+                ElementTreeView treeView = new()
+                {
+                    fixedItemHeight = _dropdown.rowHeight,
+                    horizontalScrollingEnabled = true,
+                    selectionType = SelectionType.Single
+                };
+                treeView.style.flexGrow = 1f;
+                treeView.style.marginTop = lineHeight * 0.15f;
+                treeView.makeItem = () =>
+                {
+                    VisualElement row = new();
+                    row.style.flexDirection = FlexDirection.Row;
+                    row.style.alignItems = Align.Center;
+
+                    Image icon = new() { scaleMode = ScaleMode.ScaleToFit };
+                    icon.style.width = 16f;
+                    icon.style.height = 16f;
+                    icon.style.flexShrink = 0f;
+                    icon.style.marginRight = 2f;
+                    row.Add(icon);
+                    row.Add(new Label());
+                    return row;
+                };
+                treeView.bindItem = (element, index) =>
+                {
+                    TreeViewItem item = treeView.GetItemDataForIndex<TreeViewItem>(index);
+                    element.Q<Label>().text = item.displayName;
+                    element.Q<Image>().image = _dropdown.GetIcon(item);
+                };
+                // IMGUI TreeView의 DoubleClickedItem과 같은 선택 확정 시점입니다.
+                treeView.itemsChosen += items =>
+                {
+                    foreach (object chosen in items)
+                    {
+                        if (chosen is not TreeViewItem item) continue;
+
+                        _dropdown.Choose(item.id);
+                        return;
+                    }
+                };
+                root.Add(treeView);
+
+                searchField.RegisterValueChangedCallback(change =>
+                {
+                    _dropdown.searchString = change.newValue;
+                    Populate();
+                });
+                Populate();
+                return root;
+
+                void Populate()
+                {
+                    treeView.SetRootItems(_dropdown.CreateElementItems());
+                    treeView.Rebuild();
+                    treeView.ExpandAll();
+                }
+            }
+
             public override void OnGUI(Rect rect)
             {
+                // UI Toolkit 내용이 만들어졌으면 IMGUI TreeView를 겹쳐 그리지 않습니다.
+                if (_usesUIToolkit) return;
+
                 float voidWidth = rect.width * 0.1f;
                 rect.y += 3.0f;
 
@@ -251,6 +341,52 @@ namespace Jeomseon.Unity.Attributes.Editor
 
             _content.editorWindow?.Close();
             _onSelected?.Invoke(@object);
+        }
+
+        internal void Choose(int id) => DoubleClickedItem(id);
+
+        internal Texture2D GetIcon(TreeViewItem item) => getIconForItem(item);
+
+        // UI Toolkit TreeView용 항목입니다. IMGUI BuildRows와 같이 검색어가 있으면 이름이 일치하는
+        // 항목만 들여쓰기 없는 평면 목록으로 반환합니다.
+        internal List<TreeViewItemData<TreeViewItem>> CreateElementItems()
+        {
+            List<TreeViewItemData<TreeViewItem>> result = new();
+            if (rootItem?.children is null)
+                return result;
+
+            if (string.IsNullOrEmpty(searchString))
+            {
+                foreach (TreeViewItem child in rootItem.children)
+                    result.Add(toElementItem(child));
+
+                return result;
+            }
+
+            foreach (TreeViewItem child in rootItem.children)
+                collectMatches(child);
+
+            return result;
+
+            static TreeViewItemData<TreeViewItem> toElementItem(TreeViewItem item)
+            {
+                List<TreeViewItemData<TreeViewItem>> children = item.children?
+                    .Select(toElementItem)
+                    .ToList();
+                return new TreeViewItemData<TreeViewItem>(item.id, item, children);
+            }
+
+            void collectMatches(TreeViewItem item)
+            {
+                if (item.displayName.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
+                    result.Add(new TreeViewItemData<TreeViewItem>(item.id, item));
+
+                if (item.children is null)
+                    return;
+
+                foreach (TreeViewItem child in item.children)
+                    collectMatches(child);
+            }
         }
 
         public void Show(Rect rect)

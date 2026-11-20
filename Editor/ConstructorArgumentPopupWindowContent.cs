@@ -2,6 +2,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Jeomseon.Unity.Attributes.Editor
 {
@@ -22,6 +23,7 @@ namespace Jeomseon.Unity.Attributes.Editor
         private readonly PendingConstructorSelection _pending;
         private readonly Func<string> _onCreate;
         private Vector2 _scrollPosition;
+        private bool _usesUIToolkit;
 
         public ConstructorArgumentPopupWindowContent(PendingConstructorSelection pending, Func<string> onCreate)
         {
@@ -36,8 +38,70 @@ namespace Jeomseon.Unity.Attributes.Editor
             return new Vector2(Width, Mathf.Min(MaxHeight, height));
         }
 
+        public override VisualElement CreateGUI()
+        {
+            _usesUIToolkit = true;
+
+            VisualElement root = new();
+            root.style.flexGrow = 1f;
+            root.style.paddingLeft = Padding;
+            root.style.paddingRight = Padding;
+            root.style.paddingTop = Padding;
+            root.style.paddingBottom = Padding;
+
+            Label title = new($"{_pending.SelectedType.Name} 생성");
+            title.style.height = TitleHeight;
+            title.style.flexShrink = 0f;
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.style.unityTextAlign = TextAnchor.MiddleLeft;
+            root.Add(title);
+
+            ScrollView scrollView = new(ScrollViewMode.Vertical);
+            scrollView.style.flexGrow = 1f;
+            root.Add(scrollView);
+
+            HelpBox error = new(string.Empty, HelpBoxMessageType.Error);
+            error.style.marginTop = 2f;
+
+            scrollView.Add(ConstructorArgumentFormGUI.CreateGUI(_pending, RefreshError, OnAction));
+            scrollView.Add(error);
+            RefreshError();
+            return root;
+
+            void RefreshError()
+            {
+                error.text = _pending.ErrorMessage ?? string.Empty;
+                error.style.display = string.IsNullOrEmpty(_pending.ErrorMessage) ? DisplayStyle.None : DisplayStyle.Flex;
+            }
+
+            void OnAction(ConstructorArgumentFormAction action)
+            {
+                switch (action)
+                {
+                    case ConstructorArgumentFormAction.Created:
+                        string errorMessage = _onCreate();
+                        if (string.IsNullOrEmpty(errorMessage))
+                        {
+                            editorWindow.Close();
+                        }
+                        else
+                        {
+                            _pending.ErrorMessage = errorMessage;
+                            RefreshError();
+                        }
+                        break;
+                    case ConstructorArgumentFormAction.Cancelled:
+                        editorWindow.Close();
+                        break;
+                }
+            }
+        }
+
         public override void OnGUI(Rect rect)
         {
+            // UI Toolkit 내용이 만들어졌으면 IMGUI 폼을 겹쳐 그리지 않습니다.
+            if (_usesUIToolkit) return;
+
             Rect titleRect = new(rect.x + Padding, rect.y + Padding, rect.width - Padding * 2f, TitleHeight);
             EditorGUI.LabelField(titleRect, $"{_pending.SelectedType.Name} 생성", EditorStyles.boldLabel);
 

@@ -1,10 +1,12 @@
 #if UNITY_EDITOR
+using UnityEngine.UIElements;
+
 namespace Jeomseon.Unity.Attributes.Editor
 {
     using UnityEditorObjectEditor = UnityEditor.Editor;
 
     /// <summary>
-    /// Inspector Injection 영역에서 InspectorButton GUI를 호출합니다.
+    /// Inspector Injection 영역(UI Toolkit)에 InspectorButton 요소를 만듭니다.
     /// </summary>
     internal sealed class InspectorButtonInjectedDrawer
         : IInspectorInjectedDrawer, IInspectorButtonPresenter
@@ -13,10 +15,8 @@ namespace Jeomseon.Unity.Attributes.Editor
         {
         }
 
-        public void OnInspectorGUI(UnityEditorObjectEditor editor)
-        {
-            Draw(editor);
-        }
+        public VisualElement CreateInspectorGUI(UnityEditorObjectEditor editor)
+            => InspectorButtonGUI.CreateGUI(editor);
 
         public void Draw(UnityEditorObjectEditor editor) => InspectorButtonGUI.Draw(editor);
 

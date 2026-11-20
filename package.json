@@ -29,6 +29,11 @@
       "displayName": "Basic Usage",
       "description": "패키지 핵심 API를 확인하는 최소 사용 예제입니다.",
       "path": "Samples~/BasicUsage"
+    },
+    {
+      "displayName": "Inline ScriptableObject",
+      "description": "InlineScriptableObject로 공유 ScriptableObject 자산을 컴포넌트 Inspector에서 편집하는 예제입니다.",
+      "path": "Samples~/InlineScriptableObject"
     }
   ]
 }
