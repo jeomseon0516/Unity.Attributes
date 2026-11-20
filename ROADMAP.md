@@ -89,4 +89,4 @@
 
 - `ShowIfAttribute`는 같은 직렬화 범위의 bool·int·enum을 비교합니다.
 - 자동 프로퍼티 backing field와 중첩 필드를 지원합니다. 조건을 읽을 수 없거나 선택 대상 값이 혼합되어 있으면 필드를 표시합니다.
-- Basic Usage의 `InspectorButtonSample`에서 UI Toolkit Inspector 갱신을 확인합니다.
+- Basic Usage의 `InspectorButtonSample.unity` 씬을 열고 `InspectorInjectionSample` 컴포넌트에서 UI Toolkit Inspector 갱신을 확인합니다.
