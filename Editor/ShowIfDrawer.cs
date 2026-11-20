@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -10,6 +11,9 @@ namespace Jeomseon.Unity.Attributes.Editor
     {
         internal static SerializedProperty FindCondition(SerializedProperty property, string memberName)
         {
+            if (string.IsNullOrEmpty(memberName))
+                return null;
+
             var separator = property.propertyPath.LastIndexOf('.');
             var prefix = separator < 0 ? string.Empty : property.propertyPath.Substring(0, separator + 1);
             var serializedObject = property.serializedObject;
@@ -46,21 +50,22 @@ namespace Jeomseon.Unity.Attributes.Editor
             return field;
         }
 
-        private bool IsVisible(SerializedProperty property)
+        private bool IsPropertyVisible(SerializedProperty property)
         {
             var rule = (ShowIfAttribute)attribute;
             return IsVisible(FindCondition(property, rule.MemberName), rule.ExpectedValue);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-            => IsVisible(property)
+            => IsPropertyVisible(property)
                 ? EditorGUI.GetPropertyHeight(property, label, true)
                 : -EditorGUIUtility.standardVerticalSpacing;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (IsVisible(property))
+            if (IsPropertyVisible(property))
                 EditorGUI.PropertyField(position, property, label, true);
         }
     }
 }
+#endif

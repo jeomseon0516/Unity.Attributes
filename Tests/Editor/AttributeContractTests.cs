@@ -15,6 +15,7 @@ namespace Jeomseon.Attribute.Tests
         [TestCase(typeof(Vector2SliderAttribute), AttributeTargets.Field)]
         [TestCase(typeof(GetOrAddComponentAttribute), AttributeTargets.Field)]
         [TestCase(typeof(HierarchyObjectPickerAttribute), AttributeTargets.Field)]
+        [TestCase(typeof(ShowIfAttribute), AttributeTargets.Field)]
         [TestCase(typeof(InspectorButtonAttribute), AttributeTargets.Method)]
         [TestCase(typeof(InvokeOnInspectorChangeAttribute), AttributeTargets.Method)]
         public void AttributeUsage_IsSingleAndInherited(Type type, AttributeTargets targets)

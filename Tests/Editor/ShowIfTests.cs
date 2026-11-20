@@ -1,4 +1,5 @@
 using System;
+using Jeomseon.Unity.Attributes;
 using Jeomseon.Unity.Attributes.Editor;
 using NUnit.Framework;
 using UnityEditor;
@@ -37,6 +38,8 @@ namespace Jeomseon.Attribute.Tests
         [TestCase("DisplayMode", 1, false)]
         [TestCase("details", 0, true)]
         [TestCase("missing", 0, true)]
+        [TestCase("", 0, true)]
+        [TestCase(null, 0, true)]
         public void EvaluatesSiblingConditions(string memberName, int expected, bool visible)
         {
             var fixture = ScriptableObject.CreateInstance<Fixture>();
@@ -51,6 +54,13 @@ namespace Jeomseon.Attribute.Tests
             {
                 Object.DestroyImmediate(fixture);
             }
+        }
+
+        [Test]
+        public void ConstructorStoresBooleanExpectationsAsIntegers()
+        {
+            Assert.That(new ShowIfAttribute("visible").ExpectedValue, Is.EqualTo(1));
+            Assert.That(new ShowIfAttribute("visible", false).ExpectedValue, Is.Zero);
         }
 
         [Test]

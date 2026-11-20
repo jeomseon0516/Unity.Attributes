@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Jeomseon.Unity.Attributes
 {
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
     public sealed class ShowIfAttribute : PropertyAttribute
     {
         public string MemberName { get; }
