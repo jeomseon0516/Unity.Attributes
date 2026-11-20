@@ -110,6 +110,11 @@ belong to Editor. Domain-specific attributes belong to their feature packages.
 ReadOnly does not prevent code mutation. InvokeOnInspectorChange does not replace runtime setters
 or events. Inspector Injection and Header fallback are alternative paths that avoid duplicate buttons.
 
+Attribute drawers render with UI Toolkit (`CreatePropertyGUI`) and keep their `OnGUI` path for IMGUI
+inspectors. To show InspectorButtons in your own CustomEditor, call `InspectorButtonGUI.Draw(this)` from
+IMGUI `OnInspectorGUI`, or add the element returned by `InspectorButtonGUI.CreateGUI(this)` in UI Toolkit
+`CreateInspectorGUI`.
+
 ### Example
 
 Import `Jeomseon.Unity.Attributes`. [AttributesSample.cs](Samples~/BasicUsage/AttributesSample.cs)
@@ -139,6 +144,8 @@ Constructors with unsupported parameters are excluded. Extend
 `ISerializeReferenceSelectorConstructorParameterPipeline` in an Editor assembly: concrete implementations
 with public parameterless constructors are discovered using TypeCache. Implement compatibility,
 default values, and field drawing; the optional naming attribute supplies the display name.
+The constructor popup uses UI Toolkit and builds inputs with `CreateField`. Implementations that do not
+override `CreateField` are shown through an element that wraps their IMGUI `DrawField`.
 
 ### Source and verification
 
@@ -159,6 +166,7 @@ instances, exceptions, cancellation, Undo, and Assembly/Domain Reload button beh
 - Polymorphic references: `SerializeReferenceSelector` (concrete type selection for single
   `SerializeReference` fields and lists)
 - Method invocation: `InspectorButton`, `InvokeOnInspectorChange`
+- Shared asset editing: `InlineScriptableObject` (expands the referenced asset's Inspector below a ScriptableObject reference)
 
 ### Sample verification
 
@@ -166,6 +174,11 @@ instances, exceptions, cancellation, Undo, and Assembly/Domain Reload button beh
 and `ReadOnly`. Runnable scenes are `InspectorButtonSample`, `ObjectAssignmentSample`, and
 `SerializeReferenceSelectorSample`: they cover buttons/change callbacks, assignment/Undo, and
 polymorphic construction/save/restore. See the [sample checklist](Samples~/BasicUsage/README.md).
+
+The `InlineScriptableObjectSample` scene in `Samples~/InlineScriptableObject` covers
+`InlineScriptableObject` with and without a reference, value sharing when two components reference
+the same asset, and hiding the edit area when a multi-selection has different references. See the
+[Inline ScriptableObject checklist](Samples~/InlineScriptableObject/README.md).
 
 For Injection regression checks:
 
@@ -213,6 +226,8 @@ Import the desired entry from **Package Manager > Samples**. Use the included Sc
   - [InspectorButtonSample](Samples~/BasicUsage/InspectorButtonSample.unity)
   - [ObjectAssignmentSample](Samples~/BasicUsage/ObjectAssignmentSample.unity)
   - [SerializeReferenceSelectorSample](Samples~/BasicUsage/SerializeReferenceSelectorSample.unity)
+- [Inline ScriptableObject](Samples~/InlineScriptableObject/README.md)
+  - [InlineScriptableObjectSample](Samples~/InlineScriptableObject/InlineScriptableObjectSample.unity)
 
 ## Tests
 

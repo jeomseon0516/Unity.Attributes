@@ -21,7 +21,7 @@ namespace Jeomseon.Unity.Attributes.Editor
         private const double ScanIntervalSeconds = 0.5d;
 
         private readonly Dictionary<Type, EditorAccessor> _editorAccessors = new();
-        private readonly List<IMGUIContainer> _containers = new();
+        private readonly List<VisualElement> _containers = new();
         private Type _inspectorWindowType;
         private double _nextScanTime;
         private bool _started;
@@ -132,7 +132,7 @@ namespace Jeomseon.Unity.Attributes.Editor
             if (editor == null || editor.target is not (MonoBehaviour or ScriptableObject))
                 return;
 
-            IMGUIContainer existing = inspectorElement.Q<IMGUIContainer>(ContainerName);
+            VisualElement existing = inspectorElement.Q<VisualElement>(ContainerName);
             if (existing?.userData is InjectionContext existingContext)
             {
                 if (existingContext.IsDisposed)
@@ -146,18 +146,18 @@ namespace Jeomseon.Unity.Attributes.Editor
                 }
             }
 
-            InjectionContext context = new(editor);
+            VisualElement container = new()
+            {
+                name = ContainerName
+            };
+            InjectionContext context = new(editor, container);
             if (!context.HasDrawers)
             {
                 context.Dispose();
                 return;
             }
 
-            IMGUIContainer container = new(context.OnInspectorGUI)
-            {
-                name = ContainerName,
-                userData = context
-            };
+            container.userData = context;
 
             container.RegisterCallback<DetachFromPanelEvent>(_ =>
             {
@@ -171,7 +171,7 @@ namespace Jeomseon.Unity.Attributes.Editor
 
         private void RemoveAttachedContainers()
         {
-            foreach (IMGUIContainer container in _containers.ToArray())
+            foreach (VisualElement container in _containers.ToArray())
             {
                 if (container.userData is InjectionContext context)
                     context.Dispose();
@@ -263,12 +263,14 @@ namespace Jeomseon.Unity.Attributes.Editor
         private sealed class InjectionContext : IDisposable
         {
             private readonly List<IInspectorInjectedDrawer> _drawers;
+            private readonly VisualElement _container;
             private UnityObjectEditor _editor;
             private bool _disposed;
 
-            public InjectionContext(UnityObjectEditor editor)
+            public InjectionContext(UnityObjectEditor editor, VisualElement container)
             {
                 _drawers = CreateDrawers();
+                _container = container;
                 UpdateEditor(editor);
             }
 
@@ -283,15 +285,22 @@ namespace Jeomseon.Unity.Attributes.Editor
                 _editor = editor;
                 foreach (IInspectorInjectedDrawer drawer in _drawers)
                     drawer.OnEnable(_editor);
+
+                RebuildElements();
             }
 
-            public void OnInspectorGUI()
+            private void RebuildElements()
             {
-                if (_disposed || _editor == null)
+                _container.Clear();
+                if (_editor == null)
                     return;
 
                 foreach (IInspectorInjectedDrawer drawer in _drawers)
-                    drawer.OnInspectorGUI(_editor);
+                {
+                    VisualElement element = drawer.CreateInspectorGUI(_editor);
+                    if (element != null)
+                        _container.Add(element);
+                }
             }
 
             public void Dispose()
