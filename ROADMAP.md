@@ -84,3 +84,9 @@
   기본값, 파이프라인 후보·표시 이름과 Object/Enum/Vector 기본값, 생성 전 불변, 대상별 독립
   인스턴스, 중간 실패 시 전체 불변, Undo, 생성자 예외 메시지를 검증합니다. 사용자가 Unity Test
   Runner에서 11개 전체 PASS를 확인했습니다.
+
+### ShowIf
+
+- `ShowIfAttribute`는 같은 직렬화 범위의 bool·int·enum을 비교합니다.
+- 자동 프로퍼티 backing field와 중첩 필드를 지원합니다. 조건을 읽을 수 없거나 선택 대상 값이 혼합되어 있으면 필드를 표시합니다.
+- Basic Usage의 `InspectorButtonSample`에서 UI Toolkit Inspector 갱신을 확인합니다.
