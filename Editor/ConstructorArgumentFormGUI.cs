@@ -5,6 +5,7 @@ using System.Reflection;
 using Jeomseon.Unity.Attributes.Editor.ConstructorPipelines;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Jeomseon.Unity.Attributes.Editor
 {
@@ -12,6 +13,7 @@ namespace Jeomseon.Unity.Attributes.Editor
     /// .. SerializeReferenceSelectorDrawer가 매개변수 생성자를 가진 타입을 선택했을 때 보여주는
     /// 임시 입력 폼을 그립니다. "생성" 버튼을 누르기 전까지는 SerializedProperty를 전혀 건드리지
     /// 않습니다 — 생성자 인자 편집은 PendingConstructorSelection의 로컬 버퍼에서만 이뤄집니다.
+    /// IMGUI 호스트는 <see cref="Draw"/>/<see cref="GetHeight"/>, UI Toolkit 호스트는 <see cref="CreateGUI"/>를 사용합니다.
     /// </summary>
     internal static class ConstructorArgumentFormGUI
     {
@@ -94,14 +96,128 @@ namespace Jeomseon.Unity.Attributes.Editor
             return ConstructorArgumentFormAction.None;
         }
 
-        private static void DrawOverloadPicker(Rect position, PendingConstructorSelection pending, Action onStateChanged)
+        // UI Toolkit판 입력 폼입니다. 오버로드·파이프라인 선택이 바뀌면 폼을 다시 만들고
+        // onStateChanged로 호스트에 알립니다. 버튼 결과는 onAction으로 전달합니다.
+        public static VisualElement CreateGUI(
+            PendingConstructorSelection pending,
+            Action onStateChanged,
+            Action<ConstructorArgumentFormAction> onAction)
         {
-            string buttonLabel = pending.ChosenConstructorIndex.HasValue
-                ? DescribeConstructor(pending.ConstructibleConstructors[pending.ChosenConstructorIndex.Value])
-                : "생성자 선택";
+            VisualElement root = new();
+            Rebuild();
+            return root;
 
-            if (!EditorGUI.DropdownButton(position, new GUIContent(buttonLabel), FocusType.Keyboard)) return;
+            void Rebuild()
+            {
+                root.Clear();
+                BuildForm(root, pending, () =>
+                {
+                    Rebuild();
+                    onStateChanged?.Invoke();
+                }, onAction);
+            }
+        }
 
+        private static void BuildForm(
+            VisualElement root,
+            PendingConstructorSelection pending,
+            Action onStateChanged,
+            Action<ConstructorArgumentFormAction> onAction)
+        {
+            if (pending.ConstructibleConstructors.Length > 1)
+            {
+                string buttonLabel = pending.ChosenConstructorIndex.HasValue
+                    ? DescribeConstructor(pending.ConstructibleConstructors[pending.ChosenConstructorIndex.Value])
+                    : "생성자 선택";
+                DropdownButtonElement overloadButton = new(buttonLabel);
+                overloadButton.Clicked += rect => CreateOverloadMenu(pending, onStateChanged).DropDown(rect);
+                overloadButton.style.height = EditorGUIUtility.singleLineHeight;
+                overloadButton.style.marginBottom = EditorGUIUtility.standardVerticalSpacing;
+                root.Add(overloadButton);
+            }
+            else
+            {
+                Label signature = new(DescribeConstructor(pending.ConstructibleConstructors[0]));
+                signature.style.height = EditorGUIUtility.singleLineHeight;
+                signature.style.marginBottom = EditorGUIUtility.standardVerticalSpacing;
+                root.Add(signature);
+            }
+
+            if (!pending.ChosenConstructorIndex.HasValue)
+            {
+                root.Add(new Button(() => onAction?.Invoke(ConstructorArgumentFormAction.Cancelled)) { text = "취소" });
+                return;
+            }
+
+            ParameterInfo[] parameters = pending.ChosenConstructor.GetParameters();
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                root.Add(CreateParameterField(pending, parameters[i], i, onStateChanged));
+            }
+
+            VisualElement buttonRow = new();
+            buttonRow.style.flexDirection = FlexDirection.Row;
+
+            Button createButton = new(() => onAction?.Invoke(ConstructorArgumentFormAction.Created)) { text = "생성" };
+            createButton.style.flexGrow = 1f;
+            createButton.style.flexBasis = 0f;
+            createButton.style.marginRight = ButtonSpacing * 0.5f;
+
+            Button cancelButton = new(() => onAction?.Invoke(ConstructorArgumentFormAction.Cancelled)) { text = "취소" };
+            cancelButton.style.flexGrow = 1f;
+            cancelButton.style.flexBasis = 0f;
+            cancelButton.style.marginLeft = ButtonSpacing * 0.5f;
+
+            buttonRow.Add(createButton);
+            buttonRow.Add(cancelButton);
+            root.Add(buttonRow);
+        }
+
+        private static VisualElement CreateParameterField(
+            PendingConstructorSelection pending,
+            ParameterInfo parameter,
+            int parameterIndex,
+            Action onStateChanged)
+        {
+            IReadOnlyList<ISerializeReferenceSelectorConstructorParameterPipeline> candidates =
+                ConstructorParameterPipelineRegistry.GetCandidates(parameter.ParameterType);
+
+            if (!pending.ParameterPipelineChoice.TryGetValue(parameterIndex, out int chosenCandidateIndex) ||
+                chosenCandidateIndex >= candidates.Count)
+            {
+                chosenCandidateIndex = 0;
+            }
+
+            VisualElement row = new();
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.marginBottom = EditorGUIUtility.standardVerticalSpacing;
+
+            VisualElement field = candidates[chosenCandidateIndex].CreateField(
+                parameter.Name,
+                parameter.ParameterType,
+                pending.ParameterValues[parameterIndex],
+                value => pending.ParameterValues[parameterIndex] = value);
+            field.style.flexGrow = 1f;
+            field.style.flexShrink = 1f;
+            row.Add(field);
+
+            if (candidates.Count > 1)
+            {
+                int capturedChoice = chosenCandidateIndex;
+                DropdownButtonElement picker = new(string.Empty);
+                picker.Clicked += rect =>
+                    CreatePipelineMenu(pending, parameterIndex, candidates, capturedChoice, onStateChanged).DropDown(rect);
+                picker.style.width = PipelinePickerWidth;
+                picker.style.flexShrink = 0f;
+                picker.style.marginLeft = ButtonSpacing;
+                row.Add(picker);
+            }
+
+            return row;
+        }
+
+        private static GenericMenu CreateOverloadMenu(PendingConstructorSelection pending, Action onStateChanged)
+        {
             GenericMenu menu = new();
             for (int i = 0; i < pending.ConstructibleConstructors.Length; i++)
             {
@@ -113,7 +229,41 @@ namespace Jeomseon.Unity.Attributes.Editor
                     onStateChanged?.Invoke();
                 });
             }
-            menu.ShowAsContext();
+
+            return menu;
+        }
+
+        private static GenericMenu CreatePipelineMenu(
+            PendingConstructorSelection pending,
+            int parameterIndex,
+            IReadOnlyList<ISerializeReferenceSelectorConstructorParameterPipeline> candidates,
+            int chosenCandidateIndex,
+            Action onStateChanged)
+        {
+            GenericMenu menu = new();
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                int capturedIndex = i;
+                string name = ConstructorParameterPipelineRegistry.GetDisplayName(candidates[i]);
+                menu.AddItem(new GUIContent(name), i == chosenCandidateIndex, () =>
+                {
+                    pending.ParameterPipelineChoice[parameterIndex] = capturedIndex;
+                    onStateChanged?.Invoke();
+                });
+            }
+
+            return menu;
+        }
+
+        private static void DrawOverloadPicker(Rect position, PendingConstructorSelection pending, Action onStateChanged)
+        {
+            string buttonLabel = pending.ChosenConstructorIndex.HasValue
+                ? DescribeConstructor(pending.ConstructibleConstructors[pending.ChosenConstructorIndex.Value])
+                : "생성자 선택";
+
+            if (!EditorGUI.DropdownButton(position, new GUIContent(buttonLabel), FocusType.Keyboard)) return;
+
+            CreateOverloadMenu(pending, onStateChanged).ShowAsContext();
         }
 
         private static void DrawParameterField(Rect position, PendingConstructorSelection pending, ParameterInfo parameter, int parameterIndex, Action onStateChanged)
@@ -150,18 +300,7 @@ namespace Jeomseon.Unity.Attributes.Editor
         {
             if (!EditorGUI.DropdownButton(position, GUIContent.none, FocusType.Passive)) return;
 
-            GenericMenu menu = new();
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                int capturedIndex = i;
-                string name = ConstructorParameterPipelineRegistry.GetDisplayName(candidates[i]);
-                menu.AddItem(new GUIContent(name), i == chosenCandidateIndex, () =>
-                {
-                    pending.ParameterPipelineChoice[parameterIndex] = capturedIndex;
-                    onStateChanged?.Invoke();
-                });
-            }
-            menu.ShowAsContext();
+            CreatePipelineMenu(pending, parameterIndex, candidates, chosenCandidateIndex, onStateChanged).ShowAsContext();
         }
 
         private static string DescribeConstructor(ConstructorInfo constructor)

@@ -20,6 +20,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                 {
                     bindingPath = property.propertyPath
                 };
+                field.AddToClassList(BaseField<float>.alignedFieldUssClassName);
                 field.RegisterValueChangedCallback(change =>
                 {
                     float clamped = Clamp(change.newValue, maxAttribute.Max);
@@ -38,6 +39,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                 {
                     bindingPath = property.propertyPath
                 };
+                field.AddToClassList(BaseField<int>.alignedFieldUssClassName);
                 field.RegisterValueChangedCallback(change =>
                 {
                     int clamped = Clamp(change.newValue, maxAttribute.Max);

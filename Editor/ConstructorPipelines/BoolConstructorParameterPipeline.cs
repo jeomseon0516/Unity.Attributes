@@ -2,6 +2,8 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 
 namespace Jeomseon.Unity.Attributes.Editor.ConstructorPipelines
 {
@@ -13,6 +15,13 @@ namespace Jeomseon.Unity.Attributes.Editor.ConstructorPipelines
         public object DrawField(Rect position, GUIContent label, Type parameterType, object currentValue)
         {
             return EditorGUI.Toggle(position, label, currentValue is bool value && value);
+        }
+
+        public VisualElement CreateField(string label, Type parameterType, object currentValue, Action<object> onValueChanged)
+        {
+            Toggle field = new(label) { value = currentValue is bool typed && typed };
+            field.RegisterValueChangedCallback(change => onValueChanged?.Invoke(change.newValue));
+            return field;
         }
     }
 }

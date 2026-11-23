@@ -5,10 +5,13 @@ using System.Reflection;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Jeomseon.Unity.Attributes;
 using Jeomseon.Unity.Attributes.Editor.ConstructorPipelines;
 using Jeomseon.Unity.EditorToolkit.Editor;
+using PopupWindow = UnityEditor.PopupWindow;
 
 namespace Jeomseon.Unity.Attributes.Editor
 {
@@ -16,6 +19,162 @@ namespace Jeomseon.Unity.Attributes.Editor
     internal sealed class SerializeReferenceSelectorDrawer : PropertyDrawer
     {
         private readonly Dictionary<string, AdvancedDropdownState> _dropdownStates = new();
+
+        // EditorGUI.indentLevel 한 단계와 같은 들여쓰기입니다.
+        private const float IndentWidth = 15f;
+
+        // -------------------- UI Toolkit --------------------
+
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            if (!property.isArray && property.propertyType != SerializedPropertyType.ManagedReference)
+            {
+                VisualElement row = new();
+                row.style.flexDirection = FlexDirection.Row;
+                Label nameLabel = new(property.displayName);
+                nameLabel.AddToClassList(BaseField<string>.labelUssClassName);
+                row.Add(nameLabel);
+                row.Add(new Label("SerializeReferenceSelector는 [SerializeReference] 필드에만 사용할 수 있습니다."));
+                return row;
+            }
+
+            return property.isArray
+                ? CreateArrayElement(property)
+                : CreateManagedReferenceElement(property, property.displayName);
+        }
+
+        private VisualElement CreateArrayElement(SerializedProperty arrayProperty)
+        {
+            Foldout foldout = new()
+            {
+                text = arrayProperty.displayName,
+                value = arrayProperty.isExpanded
+            };
+            foldout.RegisterValueChangedCallback(change =>
+            {
+                // 하위 필드의 bool 변경 이벤트가 버블링되어 들어오는 경우는 무시합니다.
+                if (change.target == foldout)
+                    arrayProperty.isExpanded = change.newValue;
+            });
+
+            SerializedProperty sizeProperty = arrayProperty.FindPropertyRelative("Array.size");
+            IntegerField sizeField = new("Size");
+            sizeField.AddToClassList(BaseField<int>.alignedFieldUssClassName);
+            sizeField.BindProperty(sizeProperty);
+            sizeField.RegisterValueChangedCallback(change =>
+            {
+                if (change.newValue < 0)
+                    sizeField.value = 0;
+            });
+            foldout.Add(sizeField);
+
+            VisualElement elements = new();
+            foldout.Add(elements);
+
+            int builtSize = -1;
+            RebuildElements();
+            foldout.TrackPropertyValue(sizeProperty, _ => RebuildElements());
+            return foldout;
+
+            void RebuildElements()
+            {
+                if (builtSize == arrayProperty.arraySize)
+                    return;
+
+                builtSize = arrayProperty.arraySize;
+                elements.Clear();
+                for (int i = 0; i < builtSize; i++)
+                {
+                    SerializedProperty element = arrayProperty.GetArrayElementAtIndex(i);
+                    elements.Add(CreateManagedReferenceElement(element, $"Element {i}"));
+                }
+
+                if (elements.panel != null)
+                    elements.Bind(arrayProperty.serializedObject);
+            }
+        }
+
+        private VisualElement CreateManagedReferenceElement(SerializedProperty property, string label)
+        {
+            VisualElement root = new();
+            root.style.marginBottom = EditorGUIUtility.standardVerticalSpacing;
+
+            Type fieldType = GetManagedReferenceFieldType(property);
+            ManagedReferenceTypeField typeField = new(label);
+            VisualElement children = new();
+            children.style.marginLeft = IndentWidth;
+            string builtKey = null;
+
+            typeField.Clicked += rect =>
+            {
+                if (fieldType != null)
+                    ShowTypeDropdown(rect, property, fieldType, () => Refresh(property));
+            };
+            root.Add(typeField);
+            root.Add(children);
+
+            Refresh(property);
+            root.TrackPropertyValue(property, Refresh);
+            return root;
+
+            void Refresh(SerializedProperty current)
+            {
+                string currentTypeName = GetManagedReferenceTypeDisplayName(current);
+                typeField.SetValueWithoutNotify(string.IsNullOrEmpty(currentTypeName) ? "(None)" : currentTypeName);
+
+                object value = current.managedReferenceValue;
+                string key = value is null ? string.Empty : $"{value.GetType().AssemblyQualifiedName}#{current.managedReferenceId}";
+                if (key == builtKey)
+                    return;
+
+                builtKey = key;
+                children.Clear();
+                children.style.display = value is null ? DisplayStyle.None : DisplayStyle.Flex;
+                if (value is null)
+                    return;
+
+                // property 자신을 PropertyField로 다시 만들면 이 드로어가 재귀 호출되므로 하위 필드만 만듭니다.
+                ForEachChild(current, child => children.Add(new PropertyField(child)));
+
+                if (children.panel != null)
+                    children.Bind(current.serializedObject);
+            }
+        }
+
+        /// <summary>
+        /// 라벨 정렬을 Inspector 기본 필드와 맞추기 위해 BaseField를 사용하는 타입 선택 행입니다.
+        /// 값은 현재 타입 이름 표시용이며 SerializedProperty에 바인딩하지 않습니다.
+        /// </summary>
+        private sealed class ManagedReferenceTypeField : BaseField<string>
+        {
+            private readonly DropdownButtonElement _input;
+
+            public ManagedReferenceTypeField(string label) : this(label, new DropdownButtonElement(string.Empty))
+            {
+            }
+
+            private ManagedReferenceTypeField(string label, DropdownButtonElement input) : base(label, input)
+            {
+                _input = input;
+                AddToClassList(alignedFieldUssClassName);
+            }
+
+            public event Action<Rect> Clicked
+            {
+                add => _input.Clicked += value;
+                remove => _input.Clicked -= value;
+            }
+
+            public override void SetValueWithoutNotify(string newValue)
+            {
+                base.SetValueWithoutNotify(newValue);
+                // 기본 생성자 실행 중에는 _input이 아직 대입되지 않았을 수 있습니다.
+                if (_input != null)
+                    _input.Text = newValue;
+            }
+        }
+
+        // -------------------- IMGUI --------------------
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -140,7 +299,7 @@ namespace Jeomseon.Unity.Attributes.Editor
             EditorGUI.indentLevel = indent;
         }
 
-        private void ShowTypeDropdown(Rect activatorRect, SerializedProperty property, Type fieldType)
+        private void ShowTypeDropdown(Rect activatorRect, SerializedProperty property, Type fieldType, Action onAssigned = null)
         {
             string propertyKey = property.propertyPath;
             if (!_dropdownStates.TryGetValue(propertyKey, out AdvancedDropdownState state))
@@ -177,6 +336,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                     {
                         EditorUtility.DisplayDialog("생성 실패", errorMessage, "확인");
                     }
+                    onAssigned?.Invoke();
                     return;
                 }
 
@@ -195,6 +355,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                             () => pending.ChosenConstructor.Invoke(pending.ParameterValues),
                             "Select Reference Type",
                             out string errorMessage);
+                        onAssigned?.Invoke();
                         return errorMessage;
                     }));
             };
@@ -206,6 +367,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                     () => null,
                     "Clear Reference Type",
                     out _);
+                onAssigned?.Invoke();
             };
 
             dropdown.Show(activatorRect);

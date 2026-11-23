@@ -2,6 +2,12 @@
 
 모든 주요 변경 사항은 이 파일에 기록됩니다.
 
+## [0.5.0] - 2026-11-23
+
+- ShowIf와 InlineScriptableObject를 추가하고 Basic Usage 및 인라인 자산 샘플을 제공합니다.
+- Inspector 편집 경로를 UI Toolkit으로 확장하고 키보드로 드롭다운을 열 수 있게 했습니다.
+- 공유 인라인 Inspector를 제공하는 EditorToolkit 0.8.0을 사용합니다.
+
 ## [0.4.2] - 2026-09-03
 
 - com.jeomseon 패키지 간 의존성 핀이 옛 버전을 가리켜, 최소 구성 소비 프로젝트에서 UPM minimum-version-selection이 서로 안 맞는 낡은 세트를 조립하던 버그를 고쳤습니다. sibling 의존성 핀을 현재 최신으로 갱신합니다. (com.jeomseon.unity.editor-toolkit 0.3.2 -> 0.7.2; com.jeomseon.unity.core 0.1.0 -> 0.3.2)

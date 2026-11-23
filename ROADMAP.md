@@ -90,3 +90,11 @@
 - `ShowIfAttribute`는 같은 직렬화 범위의 bool·int·enum을 비교합니다.
 - 자동 프로퍼티 backing field와 중첩 필드를 지원합니다. 조건을 읽을 수 없거나 선택 대상 값이 혼합되어 있으면 필드를 표시합니다.
 - Basic Usage의 `InspectorButtonSample.unity` 씬을 열고 `InspectorInjectionSample` 컴포넌트에서 UI Toolkit Inspector 갱신을 확인합니다.
+
+### InlineScriptableObject
+
+- `[InlineScriptableObject]`는 ScriptableObject 참조 아래에서 공유 자산의 Inspector를 펼칩니다.
+- 참조가 없거나 선택한 컴포넌트의 참조가 서로 다르면 자산 편집 영역을 숨깁니다.
+  인라인에서 바꾼 값은 해당 컴포넌트의 사본이 아닌 공유 자산에 적용됩니다.
+- `Samples~/InlineScriptableObject`의 `InlineScriptableObjectSample.unity`에서 참조 있음/없음, 같은 자산 공유,
+  다중 선택 시 다른 참조의 편집 영역 숨김을 확인합니다. Unity 컴파일과 육안 확인이 남아 있습니다.

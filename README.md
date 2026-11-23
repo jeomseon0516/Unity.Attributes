@@ -59,7 +59,7 @@ ReadOnly는 런타임 접근 제어가 아닙니다. 변경 콜백은 Undo 편�
 ## 요구 사항
 
 - Unity `6000.6.0f1`
-- 패키지: `com.jeomseon.unity.attributes` `0.4.2`
+- 패키지: `com.jeomseon.unity.attributes` `0.5.0`
 - `com.jeomseon.unity.editor-toolkit`: `0.7.2`
 - `com.jeomseon.unity.core`: `0.3.2`
 
@@ -79,7 +79,7 @@ ReadOnly는 런타임 접근 제어가 아닙니다. 변경 콜백은 Undo 편�
     }
   ],
   "dependencies": {
-    "com.jeomseon.unity.attributes": "0.4.2"
+    "com.jeomseon.unity.attributes": "0.5.0"
   }
 }
 ```
@@ -87,7 +87,7 @@ ReadOnly는 런타임 접근 제어가 아닙니다. 변경 콜백은 Undo 편�
 또는 Package Manager의 **Install package from git URL**을 사용합니다:
 
 ```text
-https://github.com/jeomseon0516/Unity.Attributes.git#v0.4.2
+https://github.com/jeomseon0516/Unity.Attributes.git#v0.5.0
 ```
 
 ## 설계와 동작
@@ -111,6 +111,11 @@ Localization이나 Pooling 전용 Attribute는 해당 기능 패키지가 소유
 `ReadOnly`는 코드에서 값을 수정하는 것을 막지 않습니다. `InvokeOnInspectorChange`는
 런타임 setter나 C# event를 대신하지 않습니다. Inspector Injection 설정과 Header fallback은
 같은 버튼을 중복 표시하지 않도록 선택되는 경로입니다.
+
+Attribute Drawer는 UI Toolkit(`CreatePropertyGUI`)으로 표시하며, IMGUI Inspector에서는 기존
+`OnGUI` 경로를 사용합니다. 직접 작성한 CustomEditor에서 InspectorButton을 표시할 때 IMGUI
+`OnInspectorGUI`는 `InspectorButtonGUI.Draw(this)`, UI Toolkit `CreateInspectorGUI`는
+`InspectorButtonGUI.CreateGUI(this)`가 반환한 요소를 추가합니다.
 
 ### 실제 예제
 
@@ -143,6 +148,8 @@ Vector2/3/4를 지원합니다. 지원하지 않는 매개변수가 있는 생�
 Editor 전용 `ISerializeReferenceSelectorConstructorParameterPipeline` 구현을 TypeCache로 검색하므로
 사용자 인자 타입의 입력기를 추가할 수 있습니다. 파이프라인 구현에는 public 매개변수 없는 생성자가
 필요합니다. 지원 가능 여부와 기본값, 필드 그리기를 구현하며 선택적 이름 Attribute로 표시명을 지정합니다.
+생성자 팝업은 UI Toolkit으로 표시되며 `CreateField`로 입력 요소를 만듭니다. `CreateField`를 재정의하지 않은
+구현은 기존 `DrawField`(IMGUI)를 감싼 요소로 표시됩니다.
 
 ### 코드와 검증 경로
 
@@ -164,6 +171,7 @@ Assembly/Domain Reload에 따른 중복 버튼 여부를 [샘플 절차](Samples
 - 오브젝트 연결: `GetOrAddComponent`, `HierarchyObjectPicker`
 - 다형성 참조: `SerializeReferenceSelector` (`SerializeReference` 단일 필드·리스트의 구체 타입 선택)
 - 메서드 실행: `InspectorButton`, `InvokeOnInspectorChange`
+- 공유 자산 편집: `InlineScriptableObject` (ScriptableObject 참조 아래에서 참조한 자산의 Inspector를 펼침)
 - 각 Attribute의 PropertyDrawer, Inspector UI 및 메서드 실행 구현
 
 ### Sample 검증
@@ -172,6 +180,10 @@ Assembly/Domain Reload에 따른 중복 버튼 여부를 [샘플 절차](Samples
 실행 가능한 Scene은 `InspectorButtonSample`, `ObjectAssignmentSample`,
 `SerializeReferenceSelectorSample`입니다. 각각 버튼·변경 알림, 참조 할당·Undo,
 다형성 생성·저장·복원을 확인합니다. 상세 절차는 [샘플 안내](Samples~/BasicUsage/README.md)에 있습니다.
+
+`Samples~/InlineScriptableObject`의 `InlineScriptableObjectSample` Scene은 `InlineScriptableObject`의
+참조 있음/없음 표시, 두 컴포넌트가 같은 자산을 참조할 때의 값 공유, 다중 선택에서 참조가 다를 때
+편집 영역 숨김을 확인합니다. 상세 절차는 [Inline ScriptableObject 샘플 안내](Samples~/InlineScriptableObject/README.md)에 있습니다.
 
 Injection 회귀 확인은 다음 순서로 진행합니다.
 
@@ -215,6 +227,8 @@ Injection 회귀 확인은 다음 순서로 진행합니다.
   - [InspectorButtonSample](Samples~/BasicUsage/InspectorButtonSample.unity)
   - [ObjectAssignmentSample](Samples~/BasicUsage/ObjectAssignmentSample.unity)
   - [SerializeReferenceSelectorSample](Samples~/BasicUsage/SerializeReferenceSelectorSample.unity)
+- [Inline ScriptableObject](Samples~/InlineScriptableObject/README.md)
+  - [InlineScriptableObjectSample](Samples~/InlineScriptableObject/InlineScriptableObjectSample.unity)
 
 ## 테스트
 

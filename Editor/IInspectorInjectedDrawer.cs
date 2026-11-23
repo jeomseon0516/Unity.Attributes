@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using UnityEngine.UIElements;
 
 namespace Jeomseon.Unity.Attributes.Editor
 {
@@ -12,7 +13,7 @@ namespace Jeomseon.Unity.Attributes.Editor
     internal interface IInspectorInjectedDrawer : IDisposable
     {
         void OnEnable(UnityObjectEditor editor);
-        void OnInspectorGUI(UnityObjectEditor editor);
+        VisualElement CreateInspectorGUI(UnityObjectEditor editor);
     }
 }
 #endif

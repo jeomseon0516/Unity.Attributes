@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
 
 namespace Jeomseon.Unity.Attributes.Editor
@@ -18,6 +20,54 @@ namespace Jeomseon.Unity.Attributes.Editor
 
         private readonly Dictionary<(int TargetId, string PropertyPath), ComponentDropdown>
             _dropdowns = new();
+
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            if (property.serializedObject.targetObject is not MonoBehaviour monoBehaviour)
+                return new HelpBox("HierarchyObjectPicker는 MonoBehaviour에서만 사용할 수 있습니다.", HelpBoxMessageType.Error);
+
+            Type fieldType = fieldInfo.FieldType;
+
+            if (!typeof(UnityEngine.Object).IsAssignableFrom(fieldType))
+            {
+                return new HelpBox(
+                    "HierarchyObjectPicker는 UnityEngine.Object 필드에만 사용할 수 있습니다.",
+                    HelpBoxMessageType.Error);
+            }
+
+            if (property.propertyType != SerializedPropertyType.ObjectReference)
+                return new PropertyField(property);
+
+            ComponentDropdown dropdown = GetOrCreateDropdown(property, monoBehaviour, fieldType);
+
+            // ┌──── label ────┬─ btn ─┬─────── object field ───────┐
+            // ObjectField의 정렬 라벨을 그대로 쓰고, 라벨과 입력 영역 사이에 버튼을 넣습니다.
+            ObjectField field = new(property.displayName)
+            {
+                objectType = fieldType,
+                bindingPath = property.propertyPath
+            };
+            field.AddToClassList(BaseField<UnityEngine.Object>.alignedFieldUssClassName);
+
+            Button button = new();
+            button.style.width = 18f;
+            button.style.marginLeft = 0f;
+            button.style.marginRight = 2f;
+            button.style.paddingLeft = 0f;
+            button.style.paddingRight = 0f;
+            button.style.flexShrink = 0f;
+            button.Add(new Image
+            {
+                image = EditorGUIUtility.IconContent("icon dropdown").image,
+                scaleMode = ScaleMode.ScaleToFit
+            });
+            button.clicked += () => dropdown.Show(button.worldBound);
+            field.Insert(field.IndexOf(field.labelElement) + 1, button);
+
+            // IMGUI 경로와 같이 선택은 버튼으로만 하고 Object 입력 영역은 비활성화합니다.
+            field.Q(className: ObjectField.inputUssClassName)?.SetEnabled(false);
+            return field;
+        }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -46,36 +96,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                 return;
             }
 
-            UnityEngine.Object targetObject = property.serializedObject.targetObject;
-            string propertyPath = property.propertyPath;
-            (int TargetId, string PropertyPath) key =
-                (targetObject.GetEntityId().GetHashCode(), propertyPath);
-
-            if (!_dropdowns.TryGetValue(key, out ComponentDropdown dropdown))
-            {
-                dropdown = new ComponentDropdown(_dropdownState, monoBehaviour.gameObject, fieldType, go =>
-                {
-                    SerializedObject serializedObject = new(targetObject);
-                    SerializedProperty currentProperty = serializedObject.FindProperty(propertyPath);
-                    if (currentProperty is null)
-                        return;
-
-                    Undo.RecordObject(targetObject, "Select hierarchy object");
-                    if (fieldType == typeof(GameObject))
-                    {
-                        currentProperty.objectReferenceValue = go;
-                    }
-                    else
-                    {
-                        currentProperty.objectReferenceValue = go.GetComponent(fieldType);
-                    }
-
-                    serializedObject.ApplyModifiedProperties();
-                    PrefabUtility.RecordPrefabInstancePropertyModifications(targetObject);
-                });
-
-                _dropdowns[key] = dropdown;
-            }
+            ComponentDropdown dropdown = GetOrCreateDropdown(property, monoBehaviour, fieldType);
 
             EditorGUI.BeginProperty(position, label, property);
 
@@ -100,6 +121,41 @@ namespace Jeomseon.Unity.Attributes.Editor
             GUI.enabled = true;
 
             EditorGUI.EndProperty();
+        }
+
+        private ComponentDropdown GetOrCreateDropdown(SerializedProperty property, MonoBehaviour monoBehaviour, Type fieldType)
+        {
+            UnityEngine.Object targetObject = property.serializedObject.targetObject;
+            string propertyPath = property.propertyPath;
+            (int TargetId, string PropertyPath) key =
+                (targetObject.GetEntityId().GetHashCode(), propertyPath);
+
+            if (_dropdowns.TryGetValue(key, out ComponentDropdown dropdown))
+                return dropdown;
+
+            dropdown = new ComponentDropdown(_dropdownState, monoBehaviour.gameObject, fieldType, go =>
+            {
+                SerializedObject serializedObject = new(targetObject);
+                SerializedProperty currentProperty = serializedObject.FindProperty(propertyPath);
+                if (currentProperty is null)
+                    return;
+
+                Undo.RecordObject(targetObject, "Select hierarchy object");
+                if (fieldType == typeof(GameObject))
+                {
+                    currentProperty.objectReferenceValue = go;
+                }
+                else
+                {
+                    currentProperty.objectReferenceValue = go.GetComponent(fieldType);
+                }
+
+                serializedObject.ApplyModifiedProperties();
+                PrefabUtility.RecordPrefabInstancePropertyModifications(targetObject);
+            });
+
+            _dropdowns[key] = dropdown;
+            return dropdown;
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
