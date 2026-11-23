@@ -30,6 +30,11 @@ namespace Jeomseon.Unity.Attributes.Editor
 
             Text = text;
             this.AddManipulator(new Clickable(() => Clicked?.Invoke(worldBound)));
+            RegisterCallback<NavigationSubmitEvent>(evt =>
+            {
+                Clicked?.Invoke(worldBound);
+                evt.StopPropagation();
+            });
         }
 
         public string Text
