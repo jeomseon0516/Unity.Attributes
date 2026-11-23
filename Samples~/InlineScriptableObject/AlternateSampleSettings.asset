@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da3be7e1a0e244a89f50fecbd51364a3, type: 3}
   m_Name: AlternateSampleSettings
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   label: Alternate
   speed: 5
   count: 3
