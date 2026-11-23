@@ -24,6 +24,7 @@ Injection 수명 검증은 다음 매트릭스로 진행합니다.
 
 - 값 변경 콜백이 Undo 변경 스트림을 통해 호출되는지 확인합니다.
 - 여러 GameObject를 동시에 선택했을 때 Inspector 버튼이 모든 대상에 호출되는지 확인합니다.
+- `InspectorInjectionSample` 컴포넌트에서 `Show Details`를 켜고 끄면 `Details`가 즉시 표시되거나 숨겨집니다.
 
 `ObjectAssignmentSample` Scene에서는 `Object Assignment Sample` GameObject를 선택해
 다음 동작을 확인합니다.
