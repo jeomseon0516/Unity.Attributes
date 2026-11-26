@@ -15,11 +15,14 @@ namespace Jeomseon.Unity.Attributes.Editor
     [CustomPropertyDrawer(typeof(HierarchyObjectPickerAttribute), true)]
     internal sealed class HierarchyObjectPickerDrawer : PropertyDrawer
     {
-        private readonly TreeViewState _dropdownState = new();
         private GUIContent _buttonContent;
 
-        private readonly Dictionary<(int TargetId, string PropertyPath), ComponentDropdown>
+        private readonly Dictionary<(EntityId TargetId, string PropertyPath), ComponentDropdown>
             _dropdowns = new();
+
+        // 대상마다 계층이 달라 한 선택을 모든 대상에 적용할 수 없으므로 다중 편집 중에는 Picker를 열지 않습니다.
+        internal static bool CanPick(SerializedProperty property) =>
+            !property.serializedObject.isEditingMultipleObjects;
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
@@ -62,6 +65,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                 scaleMode = ScaleMode.ScaleToFit
             });
             button.clicked += () => dropdown.Show(button.worldBound);
+            button.SetEnabled(CanPick(property));
             field.Insert(field.IndexOf(field.labelElement) + 1, button);
 
             // IMGUI 경로와 같이 선택은 버튼으로만 하고 Object 입력 영역은 비활성화합니다.
@@ -111,9 +115,10 @@ namespace Jeomseon.Unity.Attributes.Editor
 
             EditorGUI.LabelField(labelRect, label);
 
-            if (GUI.Button(buttonRect, _buttonContent))
+            using (new EditorGUI.DisabledScope(!CanPick(property)))
             {
-                dropdown.Show(buttonRect);
+                if (GUI.Button(buttonRect, _buttonContent))
+                    dropdown.Show(buttonRect);
             }
 
             GUI.enabled = false;
@@ -142,13 +147,13 @@ namespace Jeomseon.Unity.Attributes.Editor
         {
             UnityEngine.Object targetObject = property.serializedObject.targetObject;
             string propertyPath = property.propertyPath;
-            (int TargetId, string PropertyPath) key =
-                (targetObject.GetEntityId().GetHashCode(), propertyPath);
+            var key = (targetObject.GetEntityId(), propertyPath);
 
             if (_dropdowns.TryGetValue(key, out ComponentDropdown dropdown))
                 return dropdown;
 
-            dropdown = new ComponentDropdown(_dropdownState, monoBehaviour.gameObject, fieldType, selection =>
+            // 행 ID는 드롭다운마다 순번으로 다시 매겨지므로, 선택·펼침 상태를 다른 드롭다운과 공유하지 않습니다.
+            dropdown = new ComponentDropdown(new TreeViewState(), monoBehaviour.gameObject, fieldType, selection =>
             {
                 SerializedObject serializedObject = new(targetObject);
                 SerializedProperty currentProperty = serializedObject.FindProperty(propertyPath);

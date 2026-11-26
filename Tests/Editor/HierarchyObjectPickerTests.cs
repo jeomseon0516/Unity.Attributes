@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TreeViewItem = UnityEditor.IMGUI.Controls.TreeViewItem<int>;
 using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
 using Jeomseon.Unity.Attributes.Editor;
 using NUnit.Framework;
@@ -76,24 +77,34 @@ namespace Jeomseon.Attribute.Tests
                 Assert.That(((ObjectField)element).objectType, Is.EqualTo(typeof(HierarchyObjectPickerTestComponent)));
                 Assert.That(element.Q<Button>(), Is.Not.Null);
 
-                var dropdowns = (Dictionary<(int, string), ComponentDropdown>)
+                var dropdowns = (Dictionary<(EntityId, string), ComponentDropdown>)
                     typeof(HierarchyObjectPickerDrawer).GetField("_dropdowns", privateInstance).GetValue(drawer);
-                var dropdown = dropdowns[(owner.GetEntityId().GetHashCode(), property.propertyPath)];
+                var dropdown = dropdowns[(owner.GetEntityId(), property.propertyPath)];
                 dropdown.Reload();
-                var childId = child.GetEntityId().GetHashCode();
+                var ids = RowIds(dropdown);
+                var childId = ids[multiple ? "Child (GameObject)" : "Child (HierarchyObjectPickerTestComponent)"];
+                var candidateIds = multiple
+                    ? new[]
+                    {
+                        ids["Child (FirstPickerComponent) #1"],
+                        ids["Child (SecondPickerComponent)"],
+                        ids["Child (FirstPickerComponent) #2"]
+                    }
+                    : new[] { childId };
                 HierarchyObjectPickerTestComponent previous = null;
                 if (multiple)
                 {
+                    var nestedId = ids["Nested (SecondPickerComponent)"];
                     var objectRow = dropdown.CreateElementItems().Single().children.Single();
                     Assert.That(objectRow.id, Is.EqualTo(childId));
                     Assert.That(objectRow.data.depth, Is.EqualTo(1));
                     var group = objectRow.children.Single(row => row.data.displayName == "Components");
-                    var nestedRow = objectRow.children.Single(row => row.id == nested.GetEntityId().GetHashCode());
+                    var nestedRow = objectRow.children.Single(row => row.id == nestedId);
                     Assert.That(objectRow.children.Select(row => row.id), Is.EqualTo(new[] { group.id, nestedRow.id }));
                     dropdown.ExpandAll();
                     var imguiRows = dropdown.GetRows().Select(row => row.id).ToList();
                     Assert.That(imguiRows.IndexOf(group.id), Is.LessThan(imguiRows.IndexOf(nestedRow.id)));
-                    Assert.That(imguiRows.IndexOf(candidates[^1].GetEntityId().GetHashCode()),
+                    Assert.That(imguiRows.IndexOf(candidateIds[^1]),
                         Is.LessThan(imguiRows.IndexOf(nestedRow.id)));
                     Assert.That(dropdown.IsGroup(group.data), Is.True);
                     Assert.That(dropdown.IsGroup(nestedRow.data), Is.False);
@@ -116,14 +127,14 @@ namespace Jeomseon.Attribute.Tests
                     dropdown.searchString = nameof(FirstPickerComponent);
                     Assert.That(dropdown.CreateElementItems().Select(row => row.id), Is.EqualTo(new[]
                     {
-                        candidates[0].GetEntityId().GetHashCode(),
-                        candidates[2].GetEntityId().GetHashCode()
+                        candidateIds[0],
+                        candidateIds[2]
                     }));
                     dropdown.searchString = nameof(SecondPickerComponent);
                     Assert.That(dropdown.CreateElementItems().Select(row => row.id), Is.EqualTo(new[]
                     {
-                        candidates[1].GetEntityId().GetHashCode(),
-                        nested.GetEntityId().GetHashCode()
+                        candidateIds[1],
+                        nestedId
                     }));
                     Assert.That(dropdown.HasSeparatorBefore(nestedRow.data), Is.False);
                     dropdown.searchString = "Picker";
@@ -131,15 +142,15 @@ namespace Jeomseon.Attribute.Tests
                     Assert.That(dropdown.GetRows().Select(row => row.id),
                         Is.EqualTo(dropdown.CreateElementItems().Select(row => row.id)));
                     dropdown.searchString = unfiltered;
-                    foreach (var candidate in candidates.Take(candidates.Length - 1))
+                    for (var index = 0; index < candidates.Length - 1; index++)
                     {
-                        Choose(candidate.GetEntityId().GetHashCode());
-                        AssertReference(candidate);
-                        previous = candidate;
+                        Choose(candidateIds[index]);
+                        AssertReference(candidates[index]);
+                        previous = candidates[index];
                     }
                 }
 
-                Choose(multiple ? selected.GetEntityId().GetHashCode() : childId);
+                Choose(candidateIds[^1]);
                 AssertReference(selected);
                 Undo.PerformUndo();
                 AssertReference(previous);
@@ -177,6 +188,128 @@ namespace Jeomseon.Attribute.Tests
                 Undo.ClearUndo(owner);
                 Object.DestroyImmediate(root);
                 AssetDatabase.DeleteAsset(prefabPath);
+            }
+        }
+
+        [Test]
+        public void Picker_RowIdsAreUniqueAndMapToTheirOwnInstances()
+        {
+            var root = new GameObject("Root");
+            try
+            {
+                var expected = new Dictionary<string, Object>
+                {
+                    ["Root (HierarchyObjectPickerTestComponent)"] = root.AddComponent<HierarchyObjectPickerTestComponent>()
+                };
+                var child = new GameObject("Child");
+                child.transform.SetParent(root.transform);
+                for (var ordinal = 1; ordinal <= 3; ordinal++)
+                    expected[$"Child (FirstPickerComponent) #{ordinal}"] = child.AddComponent<FirstPickerComponent>();
+                expected["Child (SecondPickerComponent)"] = child.AddComponent<SecondPickerComponent>();
+                for (var index = 0; index < 8; index++)
+                {
+                    var leaf = new GameObject($"Leaf {index}");
+                    leaf.transform.SetParent(index % 2 == 0 ? child.transform : root.transform);
+                    expected[$"Leaf {index} (SecondPickerComponent)"] = leaf.AddComponent<SecondPickerComponent>();
+                }
+
+                Object selected = null;
+                var dropdown = new ComponentDropdown(new TreeViewState(), root,
+                    typeof(HierarchyObjectPickerTestComponent), value => selected = value);
+                dropdown.Reload();
+
+                var rows = Flatten(dropdown.CreateElementItems()).ToList();
+                Assert.That(rows.Select(row => row.id), Is.Unique);
+
+                var group = rows.Single(row => dropdown.IsGroup(row.data));
+                Assert.That(group.children.Select(row => row.data.displayName), Is.EqualTo(new[]
+                {
+                    "Child (FirstPickerComponent) #1",
+                    "Child (FirstPickerComponent) #2",
+                    "Child (FirstPickerComponent) #3",
+                    "Child (SecondPickerComponent)"
+                }));
+
+                foreach (var row in rows)
+                {
+                    selected = null;
+                    dropdown.Choose(row.id);
+                    Assert.That(selected, Is.SameAs(expected.GetValueOrDefault(row.data.displayName)),
+                        row.data.displayName);
+                }
+
+                Assert.That(rows.Count(row => expected.ContainsKey(row.data.displayName)), Is.EqualTo(expected.Count));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
+        public void Picker_IsDisabledWhileEditingMultipleObjects()
+        {
+            var first = new GameObject("First").AddComponent<HierarchyObjectPickerTestComponent>();
+            var second = new GameObject("Second").AddComponent<HierarchyObjectPickerTestComponent>();
+            try
+            {
+                using (var multiple = new SerializedObject(new Object[] { first, second }))
+                using (var multipleProperty = multiple.FindProperty("single"))
+                {
+                    var multipleDrawer = CreateDrawer("single");
+                    var multipleField = multipleDrawer.CreatePropertyGUI(multipleProperty);
+                    Assert.That(multipleField, Is.TypeOf<ObjectField>());
+                    Assert.That(multipleField.Q<Button>().enabledSelf, Is.False);
+                    Assert.That(HierarchyObjectPickerDrawer.CanPick(multipleProperty), Is.False);
+                }
+
+                using var single = new SerializedObject(first);
+                using var singleProperty = single.FindProperty("single");
+                var drawer = CreateDrawer("single");
+                var field = drawer.CreatePropertyGUI(singleProperty);
+                Assert.That(field.Q<Button>().enabledSelf, Is.True);
+                Assert.That(HierarchyObjectPickerDrawer.CanPick(singleProperty), Is.True);
+
+                const BindingFlags privateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
+                var dropdowns = (Dictionary<(EntityId, string), ComponentDropdown>)
+                    typeof(HierarchyObjectPickerDrawer).GetField("_dropdowns", privateInstance).GetValue(drawer);
+                var dropdown = dropdowns[(first.GetEntityId(), singleProperty.propertyPath)];
+                dropdown.Reload();
+                dropdown.Choose(RowIds(dropdown)["First (HierarchyObjectPickerTestComponent)"]);
+                single.Update();
+                Assert.That(singleProperty.objectReferenceValue, Is.SameAs(first));
+            }
+            finally
+            {
+                Undo.ClearUndo(first);
+                Object.DestroyImmediate(first.gameObject);
+                Object.DestroyImmediate(second.gameObject);
+            }
+        }
+
+        private static HierarchyObjectPickerDrawer CreateDrawer(string fieldName)
+        {
+            const BindingFlags privateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
+            var drawer = new HierarchyObjectPickerDrawer();
+            typeof(PropertyDrawer).GetField("m_FieldInfo", privateInstance).SetValue(
+                drawer, typeof(HierarchyObjectPickerTestComponent).GetField(fieldName, privateInstance));
+            return drawer;
+        }
+
+        private static Dictionary<string, int> RowIds(ComponentDropdown dropdown) =>
+            Flatten(dropdown.CreateElementItems()).ToDictionary(row => row.data.displayName, row => row.id);
+
+        private static IEnumerable<TreeViewItemData<TreeViewItem>> Flatten(
+            IEnumerable<TreeViewItemData<TreeViewItem>> rows)
+        {
+            foreach (var row in rows)
+            {
+                yield return row;
+                if (row.children is null)
+                    continue;
+
+                foreach (var child in Flatten(row.children))
+                    yield return child;
             }
         }
     }

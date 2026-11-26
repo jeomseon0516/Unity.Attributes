@@ -254,6 +254,7 @@ namespace Jeomseon.Unity.Attributes.Editor
 
         private float _cachedContentWidth = -1f;
         private string _cachedSearchString = null;
+        private int _nextId;
 
         public ComponentDropdown(TreeViewState state, GameObject rootObject, Type filterType, Action<Object> onSelected) : base(state)
         {
@@ -273,8 +274,10 @@ namespace Jeomseon.Unity.Attributes.Editor
             _separatorBeforeIds.Clear();
             _cachedContentWidth = -1f;
             _cachedSearchString = null;
+            _nextId = 0;
 
-            TreeViewItem root = new TreeViewItem(0, -1, "root");
+            // EntityId 해시는 32비트로 잘려 충돌할 수 있으므로 생성 순서의 순번을 행 ID로 사용합니다.
+            TreeViewItem root = new TreeViewItem(_nextId++, -1, "root");
 
             if (_filterType == typeof(GameObject))
             {
@@ -297,11 +300,6 @@ namespace Jeomseon.Unity.Attributes.Editor
                 foreach (var group in candidates)
                     addComponentToDropdown(group.Key, visited);
 
-                var usedIds = new HashSet<int>(visited.Values.Select(item => item.id)) { root.id };
-                foreach (var component in candidates.SelectMany(group => group))
-                    usedIds.Add(component.GetEntityId().GetHashCode());
-
-                var groupId = int.MinValue;
                 foreach (var group in candidates)
                 {
                     var objectItem = visited[group.Key];
@@ -314,12 +312,10 @@ namespace Jeomseon.Unity.Attributes.Editor
                         continue;
                     }
 
-                    while (!usedIds.Add(groupId))
-                        groupId++;
-                    var componentsItem = new TreeViewItem(groupId, 0, "Components") { parent = objectItem };
+                    var componentsItem = new TreeViewItem(_nextId++, 0, "Components") { parent = objectItem };
                     objectItem.children ??= new List<TreeViewItem>();
                     objectItem.children.Insert(0, componentsItem);
-                    _groupIds.Add(groupId);
+                    _groupIds.Add(componentsItem.id);
                     if (objectItem.children.Count > 1)
                         _separatorBeforeIds.Add(objectItem.children[1].id);
 
@@ -336,9 +332,9 @@ namespace Jeomseon.Unity.Attributes.Editor
                             label += $" #{ordinal}";
                         }
 
-                        var id = component.GetEntityId().GetHashCode();
-                        componentsItem.AddChild(new TreeViewItem(id, 0, label));
-                        _itemsMap.Add(id, component);
+                        var componentItem = new TreeViewItem(_nextId++, 0, label);
+                        componentsItem.AddChild(componentItem);
+                        _itemsMap.Add(componentItem.id, component);
                     }
                 }
 
@@ -567,8 +563,8 @@ namespace Jeomseon.Unity.Attributes.Editor
                 addGameObjectToDropdown(gameObjectItem, child.gameObject, depth + 1);
         }
 
-        private static TreeViewItem createItem(GameObject gameObject, int depth) =>
-            new(gameObject.GetEntityId().GetHashCode(), depth, $"{gameObject.name} (GameObject)");
+        private TreeViewItem createItem(GameObject gameObject, int depth) =>
+            new(_nextId++, depth, $"{gameObject.name} (GameObject)");
     }
 }
 #endif

@@ -57,6 +57,8 @@ Injection 수명 검증은 다음 매트릭스로 진행합니다.
   할당되는지 확인합니다.
 - Undo(`Ctrl/Cmd+Z`)를 한 번 실행하면 직전 선택 이전 값으로, Redo로 다시 선택한 값으로 돌아오는지
   확인합니다. Scene을 저장하고 다시 열어도 선택한 컴포넌트가 유지되는지 확인합니다.
+- `HierarchyObjectPicker` 필드가 있는 오브젝트를 여러 개 함께 선택하면 대상마다 계층이 다르므로 Picker
+  버튼이 비활성화됩니다. 값이 서로 다르면 필드에는 Unity 기본 혼합 값 표시(`—`)가 나타나는지 확인합니다.
 
 `Object Assignment Sample`을 처음 선택하면 `GetOrAddComponent`가 `BoxCollider`를 추가하므로,
 루트 오브젝트도 `Selected Collider`의 단일 후보로 표시됩니다.
