@@ -1,9 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Linq;
-using System.Text;
 using System.Collections.Generic;
-using Jeomseon.Unity.Core.Text;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -14,6 +12,7 @@ using TreeViewItem = UnityEditor.IMGUI.Controls.TreeViewItem<int>;
 using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
 using ElementTreeView = UnityEngine.UIElements.TreeView;
 using PopupWindow = UnityEditor.PopupWindow;
+using Object = UnityEngine.Object;
 
 namespace Jeomseon.Unity.Attributes.Editor
 {
@@ -90,8 +89,22 @@ namespace Jeomseon.Unity.Attributes.Editor
                 treeView.bindItem = (element, index) =>
                 {
                     TreeViewItem item = treeView.GetItemDataForIndex<TreeViewItem>(index);
-                    element.Q<Label>().text = item.displayName;
+                    Label label = element.Q<Label>();
+                    label.text = item.displayName;
                     element.Q<Image>().image = _dropdown.GetIcon(item);
+
+                    // 행을 재사용하므로 그룹 표시와 구분선을 매번 다시 지정합니다. 행 높이는 그대로 둡니다.
+                    bool isGroup = _dropdown.IsGroup(item);
+                    label.SetEnabled(!isGroup);
+                    label.style.unityFontStyleAndWeight = isGroup
+                        ? new StyleEnum<FontStyle>(FontStyle.Italic)
+                        : new StyleEnum<FontStyle>(StyleKeyword.Null);
+
+                    bool separated = _dropdown.HasSeparatorBefore(item);
+                    element.style.borderTopWidth = separated ? new StyleFloat(1f) : new StyleFloat(StyleKeyword.Null);
+                    element.style.borderTopColor = separated
+                        ? new StyleColor(SeparatorColor)
+                        : new StyleColor(StyleKeyword.Null);
                 };
                 // IMGUI TreeView의 DoubleClickedItem과 같은 선택 확정 시점입니다.
                 treeView.itemsChosen += items =>
@@ -229,38 +242,42 @@ namespace Jeomseon.Unity.Attributes.Editor
             }
         }
 
-        private readonly Action<GameObject> _onSelected;
+        private readonly Action<Object> _onSelected;
         private readonly GameObject _rootObject;
-        private readonly Type _defaultType;
         private readonly Type _filterType;
         private readonly Texture2D _gameObjectImage;
-        private readonly Dictionary<int, GameObject> _itemsMap = new();
+        private readonly Dictionary<int, Object> _itemsMap = new();
+        private readonly HashSet<int> _groupIds = new();
+        private readonly HashSet<int> _separatorBeforeIds = new();
+        private GUIStyle _groupLabelStyle;
         private readonly ComponentDropdownPopupContent _content;
-        private Texture2D _targetTexture = null;
 
         private float _cachedContentWidth = -1f;
         private string _cachedSearchString = null;
+        private int _nextId;
 
-        public ComponentDropdown(TreeViewState state, GameObject rootObject, Type filterType, Action<GameObject> onSelected) : base(state)
+        public ComponentDropdown(TreeViewState state, GameObject rootObject, Type filterType, Action<Object> onSelected) : base(state)
         {
             _rootObject = rootObject;
             _filterType = filterType;
             _onSelected = onSelected;
 
             rowHeight *= 1.5f;
-            _defaultType = typeof(GameObject);
-
-            _gameObjectImage = EditorGUIUtility.ObjectContent(null, _defaultType).image as Texture2D;
+            _gameObjectImage = EditorGUIUtility.ObjectContent(null, typeof(GameObject)).image as Texture2D;
             _content = new ComponentDropdownPopupContent(this);
         }
 
         protected override TreeViewItem BuildRoot()
         {
             _itemsMap.Clear();
+            _groupIds.Clear();
+            _separatorBeforeIds.Clear();
             _cachedContentWidth = -1f;
             _cachedSearchString = null;
+            _nextId = 0;
 
-            TreeViewItem root = new TreeViewItem(0, -1, "root");
+            // EntityId 해시는 32비트로 잘려 충돌할 수 있으므로 생성 순서의 순번을 행 ID로 사용합니다.
+            TreeViewItem root = new TreeViewItem(_nextId++, -1, "root");
 
             if (_filterType == typeof(GameObject))
             {
@@ -275,10 +292,50 @@ namespace Jeomseon.Unity.Attributes.Editor
                     { _rootObject, treeRootItem }
                 };
 
-                foreach (Component component in _rootObject.GetComponentsInChildren(_filterType, true))
+                var candidates = _rootObject.GetComponentsInChildren(_filterType, true)
+                    .Where(component => component != null)
+                    .GroupBy(component => component.gameObject)
+                    .ToArray();
+
+                foreach (var group in candidates)
+                    addComponentToDropdown(group.Key, visited);
+
+                foreach (var group in candidates)
                 {
-                    _itemsMap[component.gameObject.GetEntityId().GetHashCode()] = component.gameObject;
-                    addComponentToDropdown(component.gameObject, visited);
+                    var objectItem = visited[group.Key];
+                    var components = group.ToArray();
+                    if (components.Length == 1)
+                    {
+                        var component = components[0];
+                        objectItem.displayName = $"{group.Key.name} ({component.GetType().Name})";
+                        _itemsMap.Add(objectItem.id, component);
+                        continue;
+                    }
+
+                    var componentsItem = new TreeViewItem(_nextId++, 0, "Components") { parent = objectItem };
+                    objectItem.children ??= new List<TreeViewItem>();
+                    objectItem.children.Insert(0, componentsItem);
+                    _groupIds.Add(componentsItem.id);
+                    if (objectItem.children.Count > 1)
+                        _separatorBeforeIds.Add(objectItem.children[1].id);
+
+                    var types = components.ToLookup(component => component.GetType());
+                    var ordinals = new Dictionary<Type, int>();
+                    foreach (var component in components)
+                    {
+                        var type = component.GetType();
+                        var label = $"{group.Key.name} ({type.Name})";
+                        if (types[type].Count() > 1)
+                        {
+                            var ordinal = ordinals.GetValueOrDefault(type) + 1;
+                            ordinals[type] = ordinal;
+                            label += $" #{ordinal}";
+                        }
+
+                        var componentItem = new TreeViewItem(_nextId++, 0, label);
+                        componentsItem.AddChild(componentItem);
+                        _itemsMap.Add(componentItem.id, component);
+                    }
                 }
 
                 setDepth(treeRootItem);
@@ -302,13 +359,31 @@ namespace Jeomseon.Unity.Attributes.Editor
 
         protected override IList<TreeViewItem> BuildRows(TreeViewItem root)
         {
-            IList<TreeViewItem> rows = base.BuildRows(root);
-
-            if (!string.IsNullOrEmpty(searchString))
+            IList<TreeViewItem> rows;
+            if (string.IsNullOrEmpty(searchString))
             {
-                rows = rows
-                    .Where(item => item.displayName.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
-                    .ToList();
+                rows = base.BuildRows(root);
+            }
+            else
+            {
+                // 기본 검색 결과는 이름순으로 정렬되므로, UI Toolkit 경로와 같은 계층 순서로 직접 수집합니다.
+                var matches = new List<TreeViewItem>();
+                collectMatches(root);
+                rows = matches;
+
+                void collectMatches(TreeViewItem item)
+                {
+                    if (item.children is null)
+                        return;
+
+                    foreach (TreeViewItem child in item.children)
+                    {
+                        if (child.displayName.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
+                            matches.Add(child);
+
+                        collectMatches(child);
+                    }
+                }
             }
 
             if (_cachedSearchString != searchString)
@@ -333,15 +408,36 @@ namespace Jeomseon.Unity.Attributes.Editor
                 EditorGUIUtility.singleLineHeight);
 
             GUIContent guiContent = new GUIContent(item.displayName, getIconForItem(item));
-            EditorGUI.LabelField(labelRect, guiContent);
+            if (IsGroup(item))
+            {
+                _groupLabelStyle ??= new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Italic };
+                using (new EditorGUI.DisabledScope(true))
+                    EditorGUI.LabelField(labelRect, guiContent, _groupLabelStyle);
+            }
+            else
+            {
+                EditorGUI.LabelField(labelRect, guiContent);
+            }
+
+            if (HasSeparatorBefore(item))
+                EditorGUI.DrawRect(new Rect(labelRect.x, args.rowRect.y, args.rowRect.xMax - labelRect.x, 1f), SeparatorColor);
         }
+
+        // 그룹 블록 다음에 오는 첫 실제 자식 행의 위쪽 경계에 구분선을 그려, 그룹을 접어도 위치가 유지됩니다.
+        internal bool HasSeparatorBefore(TreeViewItem item) =>
+            string.IsNullOrEmpty(searchString) && _separatorBeforeIds.Contains(item.id);
+
+        internal bool IsGroup(TreeViewItem item) => _groupIds.Contains(item.id);
+
+        internal static Color SeparatorColor =>
+            EditorGUIUtility.isProSkin ? new Color(1f, 1f, 1f, 0.18f) : new Color(0f, 0f, 0f, 0.22f);
 
         protected override void DoubleClickedItem(int id)
         {
-            if (!_itemsMap.TryGetValue(id, out GameObject @object)) return;
+            if (!_itemsMap.TryGetValue(id, out var selection) || selection == null) return;
 
             _content.editorWindow?.Close();
-            _onSelected?.Invoke(@object);
+            _onSelected?.Invoke(selection);
         }
 
         internal void Choose(int id) => DoubleClickedItem(id);
@@ -427,17 +523,10 @@ namespace Jeomseon.Unity.Attributes.Editor
 
         private Texture2D getIconForItem(TreeViewItem item)
         {
-            if (_filterType == _defaultType ||
-                !_itemsMap.TryGetValue(item.id, out GameObject gameObject) ||
-                !gameObject.TryGetComponent(_filterType, out Component component))
-            {
-                return _gameObjectImage;
-            }
+            if (_itemsMap.TryGetValue(item.id, out var selection) && selection is Component component && component != null)
+                return EditorGUIUtility.ObjectContent(component, component.GetType()).image as Texture2D ?? _gameObjectImage;
 
-            if (!_targetTexture)
-                _targetTexture = EditorGUIUtility.ObjectContent(component, _filterType).image as Texture2D;
-
-            return _targetTexture;
+            return _gameObjectImage;
         }
 
         private void addComponentToDropdown(GameObject selectedObject, Dictionary<GameObject, TreeViewItem> visited, TreeViewItem prevItem = null)
@@ -474,25 +563,8 @@ namespace Jeomseon.Unity.Attributes.Editor
                 addGameObjectToDropdown(gameObjectItem, child.gameObject, depth + 1);
         }
 
-        private TreeViewItem createItem(GameObject gameObject, int depth)
-        {
-            return new TreeViewItem(gameObject.GetEntityId().GetHashCode(), depth, buildString(gameObject));
-        }
-
-        private string buildString(GameObject go)
-        {
-            using (StringBuilderPool.Shared.Get(out StringBuilder builder))
-            {
-                builder.Append(go.name);
-                builder.Append(" (");
-                builder.Append(_filterType == _defaultType || go.TryGetComponent(_filterType, out Component _)
-                    ? _filterType.Name
-                    : _defaultType.Name);
-                builder.Append(")");
-
-                return builder.ToString();
-            }
-        }
+        private TreeViewItem createItem(GameObject gameObject, int depth) =>
+            new(_nextId++, depth, $"{gameObject.name} (GameObject)");
     }
 }
 #endif

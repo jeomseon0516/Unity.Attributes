@@ -34,6 +34,35 @@ Injection 수명 검증은 다음 매트릭스로 진행합니다.
 - `HierarchyObjectPicker` 드롭다운에서 `Candidate A`, `Candidate B`를 선택해
   GameObject 및 Transform 필드에 올바르게 할당되는지 확인합니다.
 
+`Selected Collider` 필드에서는 한 GameObject에 같은 기반 타입의 컴포넌트가 여러 개 붙어 있을 때
+각 컴포넌트를 개별로 선택하는 동작을 확인합니다. `Collider Candidates`에는 `BoxCollider` 2개와
+`SphereCollider` 1개가, 그 자식 `Child Collider`에는 `CapsuleCollider` 1개가 붙어 있습니다.
+두 번째 `BoxCollider`는 Center가 `(0, 1, 0)`이라 첫 번째와 구분할 수 있습니다.
+
+- 드롭다운을 열면 `Collider Candidates` 아래에 선택할 수 없는 `Components` 그룹이 표시되고, 그 아래에
+  `Collider Candidates (BoxCollider) #1`, `Collider Candidates (BoxCollider) #2`,
+  `Collider Candidates (SphereCollider)` 행이 표시되는지 확인합니다. 순번은 같은 구체 타입이 두 개
+  이상일 때만 붙습니다.
+- 실제 자식 오브젝트 `Child Collider (CapsuleCollider)`는 `Components` 그룹 안이 아니라 그룹과 같은
+  깊이에서 `Components` 그룹 다음에 표시되는지 확인합니다. 후보가 하나뿐인 GameObject는 오브젝트
+  행을 바로 선택합니다.
+- `Components` 그룹 이름은 선택할 수 없는 제목이라는 뜻으로 회색 기울임꼴로 표시되고, 그룹 블록과
+  첫 실제 자식 행 사이에 얇은 가로 구분선이 표시되는지 확인합니다. 실제 자식이 없는 GameObject에는
+  구분선이 없고, 검색 중인 평면 목록에도 구분선이 표시되지 않습니다. 어두운 테마와 밝은 테마에서
+  모두 구분되는지 확인합니다.
+- 각 행에 해당 구체 타입의 아이콘이 표시되는지 확인합니다.
+- `#1`, `#2`, `SphereCollider`, `CapsuleCollider` 행을 차례로 선택해 각각 해당 컴포넌트가
+  `Selected Collider`에 할당되는지 확인합니다.
+- 검색창에 `Sphere` 또는 `#2`를 입력하면 일치하는 행만 표시되고, 선택하면 같은 컴포넌트가
+  할당되는지 확인합니다.
+- Undo(`Ctrl/Cmd+Z`)를 한 번 실행하면 직전 선택 이전 값으로, Redo로 다시 선택한 값으로 돌아오는지
+  확인합니다. Scene을 저장하고 다시 열어도 선택한 컴포넌트가 유지되는지 확인합니다.
+- `HierarchyObjectPicker` 필드가 있는 오브젝트를 여러 개 함께 선택하면 대상마다 계층이 다르므로 Picker
+  버튼이 비활성화됩니다. 값이 서로 다르면 필드에는 Unity 기본 혼합 값 표시(`—`)가 나타나는지 확인합니다.
+
+`Object Assignment Sample`을 처음 선택하면 `GetOrAddComponent`가 `BoxCollider`를 추가하므로,
+루트 오브젝트도 `Selected Collider`의 단일 후보로 표시됩니다.
+
 `SerializeReferenceSelectorSample` Scene에서는 `Serialize Reference Selector Sample` GameObject를
 선택해 다음 동작을 확인합니다.
 

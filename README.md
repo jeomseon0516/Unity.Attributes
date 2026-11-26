@@ -59,9 +59,9 @@ ReadOnly는 런타임 접근 제어가 아닙니다. 변경 콜백은 Undo 편�
 ## 요구 사항
 
 - Unity `6000.6.0f1`
-- 패키지: `com.jeomseon.unity.attributes` `0.5.1`
-- `com.jeomseon.unity.editor-toolkit`: `0.7.2`
-- `com.jeomseon.unity.core`: `0.3.2`
+- 패키지: `com.jeomseon.unity.attributes` `0.6.0`
+- `com.jeomseon.unity.editor-toolkit`: `0.8.0`
+- `com.jeomseon.unity.core`: `0.4.0`
 
 ## 설치
 
@@ -79,7 +79,7 @@ ReadOnly는 런타임 접근 제어가 아닙니다. 변경 콜백은 Undo 편�
     }
   ],
   "dependencies": {
-    "com.jeomseon.unity.attributes": "0.5.1"
+    "com.jeomseon.unity.attributes": "0.6.0"
   }
 }
 ```
@@ -87,7 +87,7 @@ ReadOnly는 런타임 접근 제어가 아닙니다. 변경 콜백은 Undo 편�
 또는 Package Manager의 **Install package from git URL**을 사용합니다:
 
 ```text
-https://github.com/jeomseon0516/Unity.Attributes.git#v0.5.1
+https://github.com/jeomseon0516/Unity.Attributes.git#v0.6.0
 ```
 
 ## 설계와 동작
