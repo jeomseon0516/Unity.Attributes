@@ -59,9 +59,9 @@ ReadOnly is not runtime access control. Change callbacks observe the Undo editin
 ## Requirements
 
 - Unity `6000.6.0f1`
-- Package: `com.jeomseon.unity.attributes` `0.5.1`
-- `com.jeomseon.unity.editor-toolkit`: `0.7.2`
-- `com.jeomseon.unity.core`: `0.3.2`
+- Package: `com.jeomseon.unity.attributes` `0.6.0`
+- `com.jeomseon.unity.editor-toolkit`: `0.8.0`
+- `com.jeomseon.unity.core`: `0.4.0`
 
 ## Installation
 
@@ -79,7 +79,7 @@ Merge this into your project's `Packages/manifest.json`; preserve existing depen
     }
   ],
   "dependencies": {
-    "com.jeomseon.unity.attributes": "0.5.1"
+    "com.jeomseon.unity.attributes": "0.6.0"
   }
 }
 ```
@@ -87,7 +87,7 @@ Merge this into your project's `Packages/manifest.json`; preserve existing depen
 Or use **Install package from git URL** in Package Manager:
 
 ```text
-https://github.com/jeomseon0516/Unity.Attributes.git#v0.5.1
+https://github.com/jeomseon0516/Unity.Attributes.git#v0.6.0
 ```
 
 ## Design and behavior

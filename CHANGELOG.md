@@ -2,6 +2,13 @@
 
 모든 주요 변경 사항은 이 파일에 기록됩니다.
 
+## [0.6.0] - 2026-11-26
+
+- HierarchyObjectPicker가 한 GameObject에 붙은 호환 컴포넌트 여러 개를 `Components` 그룹 아래에 개별 행으로 표시합니다. 같은 구체 타입이 여러 개면 `#순번`을 붙이고, 그룹은 실제 자식 오브젝트보다 먼저 흐린 라벨과 구분선으로 표시됩니다.
+- IMGUI 드롭다운 검색 결과가 UI Toolkit과 같은 계층 순서로 표시됩니다.
+- Basic Usage 오브젝트 연결 샘플에 여러 Collider 후보 구성을 추가했습니다.
+- com.jeomseon.unity.core 의존성을 0.4.0으로 갱신했습니다.
+
 ## [0.5.1] - 2026-11-26
 
 - HierarchyObjectPicker가 배열과 List<T>의 각 오브젝트 참조 슬롯에 요소 타입으로 Picker를 표시합니다.
