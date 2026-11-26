@@ -2,6 +2,10 @@
 
 모든 주요 변경 사항은 이 파일에 기록됩니다.
 
+## [0.5.1] - 2026-11-26
+
+- HierarchyObjectPicker가 배열과 List<T>의 각 오브젝트 참조 슬롯에 요소 타입으로 Picker를 표시합니다.
+
 ## [0.5.0] - 2026-11-23
 
 - ShowIf와 InlineScriptableObject를 추가하고 Basic Usage 및 인라인 자산 샘플을 제공합니다.

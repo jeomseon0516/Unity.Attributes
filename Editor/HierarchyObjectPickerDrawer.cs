@@ -26,7 +26,7 @@ namespace Jeomseon.Unity.Attributes.Editor
             if (property.serializedObject.targetObject is not MonoBehaviour monoBehaviour)
                 return new HelpBox("HierarchyObjectPicker는 MonoBehaviour에서만 사용할 수 있습니다.", HelpBoxMessageType.Error);
 
-            Type fieldType = fieldInfo.FieldType;
+            Type fieldType = GetReferenceType(property);
 
             if (!typeof(UnityEngine.Object).IsAssignableFrom(fieldType))
             {
@@ -80,7 +80,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                 return;
             }
 
-            Type fieldType = fieldInfo.FieldType;
+            Type fieldType = GetReferenceType(property);
 
             if (!typeof(UnityEngine.Object).IsAssignableFrom(fieldType))
             {
@@ -121,6 +121,21 @@ namespace Jeomseon.Unity.Attributes.Editor
             GUI.enabled = true;
 
             EditorGUI.EndProperty();
+        }
+
+        private Type GetReferenceType(SerializedProperty property)
+        {
+            var fieldType = fieldInfo.FieldType;
+            if (property.propertyType != SerializedPropertyType.ObjectReference)
+                return fieldType;
+
+            if (fieldType.IsArray)
+                return fieldType.GetElementType();
+
+            if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
+                return fieldType.GetGenericArguments()[0];
+
+            return fieldType;
         }
 
         private ComponentDropdown GetOrCreateDropdown(SerializedProperty property, MonoBehaviour monoBehaviour, Type fieldType)

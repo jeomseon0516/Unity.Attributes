@@ -23,7 +23,7 @@ namespace Jeomseon.Unity.Attributes.Editor
         {
             private readonly ComponentDropdown _dropdown;
             private readonly SearchField _searchField;
-            private readonly GUIStyle _labelStyle;
+            private GUIStyle _labelStyle;
 
             // ✅ horizontal-only scroll state
             private float _hScroll;
@@ -32,10 +32,6 @@ namespace Jeomseon.Unity.Attributes.Editor
             public ComponentDropdownPopupContent(ComponentDropdown dropdown)
             {
                 _dropdown = dropdown;
-                _labelStyle = new GUIStyle(EditorStyles.boldLabel)
-                {
-                    alignment = TextAnchor.MiddleCenter
-                };
                 _searchField = new SearchField();
             }
 
@@ -130,6 +126,11 @@ namespace Jeomseon.Unity.Attributes.Editor
             {
                 // UI Toolkit 내용이 만들어졌으면 IMGUI TreeView를 겹쳐 그리지 않습니다.
                 if (_usesUIToolkit) return;
+
+                _labelStyle ??= new GUIStyle(EditorStyles.boldLabel)
+                {
+                    alignment = TextAnchor.MiddleCenter
+                };
 
                 float voidWidth = rect.width * 0.1f;
                 rect.y += 3.0f;
