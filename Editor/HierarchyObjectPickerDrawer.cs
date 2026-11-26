@@ -148,7 +148,7 @@ namespace Jeomseon.Unity.Attributes.Editor
             if (_dropdowns.TryGetValue(key, out ComponentDropdown dropdown))
                 return dropdown;
 
-            dropdown = new ComponentDropdown(_dropdownState, monoBehaviour.gameObject, fieldType, go =>
+            dropdown = new ComponentDropdown(_dropdownState, monoBehaviour.gameObject, fieldType, selection =>
             {
                 SerializedObject serializedObject = new(targetObject);
                 SerializedProperty currentProperty = serializedObject.FindProperty(propertyPath);
@@ -156,15 +156,7 @@ namespace Jeomseon.Unity.Attributes.Editor
                     return;
 
                 Undo.RecordObject(targetObject, "Select hierarchy object");
-                if (fieldType == typeof(GameObject))
-                {
-                    currentProperty.objectReferenceValue = go;
-                }
-                else
-                {
-                    currentProperty.objectReferenceValue = go.GetComponent(fieldType);
-                }
-
+                currentProperty.objectReferenceValue = selection;
                 serializedObject.ApplyModifiedProperties();
                 PrefabUtility.RecordPrefabInstancePropertyModifications(targetObject);
             });

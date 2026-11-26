@@ -17,5 +17,9 @@ namespace Jeomseon.Samples.Attributes
         [InfoBox("드롭다운에서 선택한 GameObject의 Transform을 할당합니다.")]
         [HierarchyObjectPicker]
         [SerializeField, FormerlySerializedAs("_selectedTransform")] private Transform selectedTransform;
+
+        [InfoBox("같은 GameObject의 여러 Collider는 Components 그룹 아래에서 개별 컴포넌트로 선택합니다.")]
+        [HierarchyObjectPicker]
+        [SerializeField] private Collider selectedCollider;
     }
 }

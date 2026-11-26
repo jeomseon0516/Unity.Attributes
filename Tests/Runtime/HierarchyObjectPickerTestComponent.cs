@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Jeomseon.Attribute.Tests
 {
-    public sealed class HierarchyObjectPickerTestComponent : MonoBehaviour
+    public class HierarchyObjectPickerTestComponent : MonoBehaviour
     {
         [SerializeField, HierarchyObjectPicker]
         private HierarchyObjectPickerTestComponent single;
